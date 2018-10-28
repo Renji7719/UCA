@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.effect.Bloom?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="700.0" type="AnchorPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="490.0" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <BarChart fx:id="Bar" layoutY="31.0" legendSide="TOP" prefHeight="343.0" prefWidth="700.0" title="端末毎の不正通信回数" AnchorPane.topAnchor="31.0">
+                    <xAxis>
+                      <CategoryAxis side="BOTTOM" fx:id="x" />
+                    </xAxis>
+                    <yAxis>
+                      <NumberAxis fx:id="y" side="LEFT" tickUnit="10.0">
+                  <effect>
+                     <Bloom />
+                  </effect>
+                  <cursor>
+                     <Cursor fx:constant="OPEN_HAND" />
+                  </cursor></NumberAxis>
+                    </yAxis>
+                  </BarChart>
+			<Button fx:id="btn_Range5m" layoutX="178.0" layoutY="387.0" mnemonicParsing="false" onAction="#Range5min" prefHeight="25.0" prefWidth="100.0" text="一番悪い奴" />
+            <Button fx:id="btnRenew" layoutX="453.0" layoutY="387.0" mnemonicParsing="false" onAction="#renewpage" prefHeight="25.0" prefWidth="100.0" text="グラフ更新" />
+         
+            <Button fx:id="btn_chgProf" layoutX="578.0" layoutY="387.0" mnemonicParsing="false" onAction="#GraphToProfile" prefHeight="25.0" prefWidth="100.0" text="オプション" />
+            <Button fx:id="btn_logout" layoutX="590.0" layoutY="18.0" mnemonicParsing="false" onAction="#Logout" prefHeight="26.0" prefWidth="100.0" text="ﾛｸﾞｱｳﾄ" />
+      <Button fx:id="btn_HowToUse" layoutX="478.0" layoutY="19.0" mnemonicParsing="false" onAction="#HowToUse" prefHeight="25.0" prefWidth="100.0" text="HowToUse" />
+         <ImageView fitHeight="61.0" fitWidth="74.0" layoutX="6.0" layoutY="5.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+               <Image url="@ロゴ透過.png" />
+            </image>
+         </ImageView>
+         <Button fx:id="LeaseUpButton" layoutX="323.0" layoutY="386.0" mnemonicParsing="false" onAction="#LeaseUpdate" text="リースファイル更新" />
+         <Button fx:id="btn_subgraph" layoutX="43.0" layoutY="387.0" mnemonicParsing="false" onAction="#GoSubGraph" prefHeight="25.0" prefWidth="100.0" text="不正通信割合" />
+         <Button fx:id="Hostnamechange" layoutX="324.0" layoutY="386.0" mnemonicParsing="false" onAction="#gethostname" prefHeight="25.0" prefWidth="100.0" text="ホスト名検索" />
+           
+   </children>
+</AnchorPane>
+</fx:root>

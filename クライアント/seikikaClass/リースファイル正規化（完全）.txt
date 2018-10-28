@@ -1,0 +1,132 @@
+package application;
+
+
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+
+public class SeikikaLeace {
+
+	public static void main(String[] args) {
+
+
+		//File inputFile = new File("C:\\dhcpTEST.leases");
+
+		//connectionメソッド呼び出し
+	  	//squidRevise(inputFile);
+
+	}
+
+	
+	static ArrayList squidRevise(String inputFile,int MaxCnt){
+		 int remember=0;
+
+		
+		int cnt = 1;
+		String line;
+		BufferedReader in = null;
+		ArrayList<String> seikikaLog = new ArrayList<String>();
+		
+		try {
+
+			in = new BufferedReader(new FileReader(inputFile));
+			
+			
+			while ((line = in.readLine()) != null){
+				System.out.println("ifff");
+				StringBuilder sb1 = new StringBuilder(line);
+				 StringBuilder str = sb1;
+				Pattern d = Pattern.compile("([1-2]?[0-9]{0,2}\\.){3,3}[1-2]?[0-9]{0,2}");
+
+		        Matcher x = d.matcher(str);
+				if(x.find()){
+					remember++;
+				}
+				
+				
+			
+				
+				if(remember>MaxCnt || MaxCnt==0){
+				System.out.println("if");
+				// 検索する文字列を用意
+		       
+
+		        Pattern p = Pattern.compile("([1-2]?[0-9]{0,2}\\.){3,3}[1-2]?[0-9]{0,2}");  //IPアドレスの正規化
+		        Pattern time = Pattern.compile("[0-9][0-9]:[0-9][0-9]:[0-9][0-9]");			//時間の正規化
+		        Pattern mac = Pattern.compile("([0-9A-Fa-f]{2}[:-]){5}[0-9A-Fa-f]{2}");		//MACアドレスの正規化
+
+		        Matcher m = p.matcher(str);
+		        Matcher t = time.matcher(str);
+		        Matcher a = mac.matcher(str);
+
+
+		        if(m.find()){
+		        	String str2 = str.toString();
+		        	str2 = str2.replace("lease","");
+		        	str2 = str2.replace("{","");
+		        	str2 = str2.replace(" ","");
+
+		        	seikikaLog.add(str2.substring(0));
+
+		        	
+
+		        }
+	        	if(t.find()){
+	        		if(str.substring(0, 9).equals("  starts ")){
+	        			
+	        			str = str.replace(0,11,"");
+	        			String str2 = str.toString();
+	        			str2 = str2.replace(" ","*");
+	        			str2 = str2.replace(";","");
+
+	        			seikikaLog.add(str2.substring(0));
+
+	        		}
+
+		        }
+
+	        	if(a.find()){
+	        		str = str.replace(0,19,"");
+	        		String str2 = str.toString();
+        			str2 = str2.replace(";","");
+        			seikikaLog.add(str2.substring(0));
+
+	        	}
+	        	
+	        	
+			}
+			}
+				
+
+		}catch(FileNotFoundException e){
+			e.printStackTrace();
+		}catch(IOException e){
+			e.printStackTrace();
+		}finally{
+			//fanallyは絶対実行される。とりあえずファイルは閉じるように。
+			try{
+				if (in != null){
+					in.close();
+				}
+
+			}catch(IOException e){
+				System.out.println("close fail");
+				e.printStackTrace();
+			}
+		}
+
+		
+		return seikikaLog;
+	}
+	
+	
+
+}
+
+

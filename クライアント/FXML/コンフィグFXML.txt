@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Font?>
+
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" type="GridPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints maxHeight="398.0" minHeight="10.0" prefHeight="359.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Profile">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="359.0" prefWidth="600.0">
+                     <children>
+                        <Button fx:id="btn_ReNewclear" layoutX="423.0" layoutY="325.0" mnemonicParsing="false" onAction="#ProClear" prefHeight="25.0" prefWidth="141.0" text="Clear" />
+                        <Button fx:id="btn_ReNewSubscribe" layoutX="113.0" layoutY="325.0" mnemonicParsing="false" onAction="#ProSubscribe" prefHeight="25.0" prefWidth="141.0" text="Subscribe" />
+                        <Button fx:id="btn_ReNewReturn" layoutX="7.0" layoutY="3.0" mnemonicParsing="false" onAction="#ReturnGraph" prefHeight="0.0" prefWidth="53.0" text="??" textFill="#f51111">
+                           <font>
+                              <Font name="Bell MT" size="20.0" />
+                           </font></Button>
+                        <TextField fx:id="txt_ReNewname" layoutX="423.0" layoutY="85.0" />
+                        <Label fx:id="lbl_ReNewname" layoutX="350.0" layoutY="89.0" text="name" />
+                        <Label fx:id="lbl_ReNewpass" layoutX="23.0" layoutY="89.0" text="password" />
+                        <PasswordField fx:id="txtpass_ReNewpass" layoutX="113.0" layoutY="85.0" />
+                        <PasswordField fx:id="txtpass_ReNewcheck" layoutX="113.0" layoutY="130.0" />
+                        <Label fx:id="lbl_ReNewpasscheck" layoutX="24.0" layoutY="134.0" text="passcheck" />
+                        <Label fx:id="lbl_ReNewAddress" layoutX="333.0" layoutY="134.0" text="mailaddress" />
+                        <TextField fx:id="txt_ReNewAddress" layoutX="423.0" layoutY="130.0" />
+                        <Label fx:id="lbl_IP" layoutX="376.0" layoutY="14.0" textFill="RED">
+                           <font>
+                              <Font name="Castellar" size="12.0" />
+                           </font>
+                        </Label>
+                        <TextField fx:id="txt_Leace" layoutX="424.0" layoutY="211.0" prefHeight="25.0" prefWidth="122.0" />
+                        <Button fx:id="btn_HowToUse" layoutX="520.0" layoutY="10.0" mnemonicParsing="false" onAction="#HowToUse" text="HELP!!!" />
+                        <Label fx:id="lbl_ID" layoutX="159.0" layoutY="14.0">
+                           <font>
+                              <Font name="HGMinchoB" size="12.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="lbl_DHCP" layoutX="351.0" layoutY="176.0" text="DHCP" />
+                        <CheckBox fx:id="chk_DHCP" layoutX="423.0" layoutY="176.0" mnemonicParsing="false" onAction="#DHCPCHECK" />
+                        <Button fx:id="btn_Leace" layoutX="552.0" layoutY="211.0" mnemonicParsing="false" onAction="#Sanshow" text="ŽQÆ" />
+                        <Label fx:id="lbl_Leace" layoutX="351.0" layoutY="215.0" text="Leace" />
+                        <Label fx:id="lbl_Class" layoutX="38.0" layoutY="176.0" text="Class" />
+                        <TextField fx:id="txt_Class" layoutX="109.0" layoutY="172.0" prefHeight="25.0" prefWidth="68.0" />
+                        <ChoiceBox fx:id="choiceclass" layoutX="27.0" layoutY="211.0" onMouseDragEntered="#choiceclass" prefWidth="150.0" />
+                        <Button fx:id="btnclassdelete" layoutX="195.0" layoutY="211.0" mnemonicParsing="false" onAction="#classdelete" text="ƒNƒ‰ƒXíœ" />
+                        <Button layoutX="195.0" layoutY="172.0" mnemonicParsing="false" text="ƒNƒ‰ƒX“o˜^" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="BlackList">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label fx:id="lbl_blacklist" layoutX="24.0" layoutY="14.0" text="blackList" />
+                        <TextArea fx:id="ta_remember" layoutX="24.0" layoutY="86.0" prefHeight="223.0" prefWidth="549.0" />
+                        <TextField fx:id="txt_blacklist" layoutX="24.0" layoutY="39.0" prefHeight="25.0" prefWidth="499.0" />
+                        <Button fx:id="btn_insert" layoutX="527.0" layoutY="39.0" mnemonicParsing="false" onAction="#BLInsert" text="“o˜^" />
+                        <Button fx:id="btn_BLTFclear2" layoutX="64.0" layoutY="325.0" mnemonicParsing="false" onAction="#BLTFclear" prefHeight="25.0" prefWidth="141.0" text="“ü—Í“à—e‚ðíœ" />
+                        <Button fx:id="btn_BLdelete" layoutX="370.0" layoutY="325.0" mnemonicParsing="false" onAction="#BLDelete" prefHeight="25.0" prefWidth="141.0" text="“o˜^ƒL[ƒ[ƒhíœ" />
+                        <ListView fx:id="BLListView" layoutX="25.0" layoutY="85.0" prefHeight="223.0" prefWidth="548.0" />
+                        <Label layoutX="403.0" layoutY="64.0" text="‘å•¶Žš¬•¶Žš‚Ì‹æ•Ê‚Í‚ ‚è‚Ü‚¹‚ñ" textFill="RED" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</fx:root>

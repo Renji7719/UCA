@@ -1,0 +1,289 @@
+package application;
+
+
+import java.awt.Desktop;
+import java.io.File;
+import java.net.URI;
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
+
+
+public class UserConfigure extends GridPane implements Initializable, Isee {
+    //profileのFieldを取得
+	@FXML
+    private TextField txt_ReNewname;
+	@FXML
+    private TextField txtpass_ReNewpass;
+	@FXML
+    private TextField txtpass_ReNewcheck;
+	@FXML
+	private TextField txt_ReNewAddress;
+	//blacklistのFieldを取得
+	@FXML
+    private TextField txt_blacklist;
+	//Returnボタンを取得（多分いる）
+	@FXML
+    private Button btn_ReNewReturn;
+	@FXML
+	private ListView<String> BLListView;
+	@FXML
+    private Label lbl_IP=new Label("");
+	@FXML
+    private Label lbl_ID=new Label("");
+	
+	 @FXML
+	    private Button btn_Howtouse;
+	    
+	    @FXML
+	    private TextField txt_Leace;
+	    
+	    @FXML
+	    private CheckBox chk_DHCP;
+	    
+	    
+	    @FXML
+	    private TextField txt_Class;
+	    
+	    @FXML
+	    private Button btn_Leace;
+	    
+	    @FXML
+	    private Label lbl_Leace;
+	    
+	    @FXML
+	    private ChoiceBox choiceclass;
+	
+	static ObservableList<String> items =FXCollections.observableArrayList ();
+	//リストの中身
+	static ObservableList<String> items2 =FXCollections.observableArrayList ();
+
+	UserConfigure() {
+        loadFxml("/fxml/UserConfigure.fxml");
+        //FXMLを読み込み;
+        
+    }
+    int cnt;
+    
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+    	//画面表示時に実行するプログラム
+    	//やってることは登録されているプロフィールとブラックリストの呼び出し
+    	String Seikika;
+    	String[] ikeda;
+    	Seikika=Client.GraghToProfile("graphToProfile");
+    	Seikika=Seikika.replace("[","");
+    	Seikika=Seikika.replace("]","");
+    	Seikika=Seikika.replace("/","");
+    	Seikika=Seikika.replace(" ","");
+    	ikeda=Seikika.split(",");
+    	items.clear();
+    	choiceclass.setItems(items2);
+    	System.out.println(ikeda[2]);
+    	txt_ReNewname.setText(ikeda[0]);
+    	txtpass_ReNewpass.setText(ikeda[3]);
+    	txtpass_ReNewcheck.setText(ikeda[3]);
+    	txt_ReNewAddress.setText(ikeda[1]);
+    	lbl_ID.setText("ID: " + ikeda[2]);
+    	lbl_IP.setText("IP: "+ikeda[4]);
+    	txt_Class.setText(Login_Menu.Class);
+    	DHCPCHECK();
+    	System.out.println(Client.DHCPAdmin);
+    	if(Client.DHCPAdmin==0){
+    		System.out.println("一般管理者だ");
+    	cnt=0;
+    	 txt_Leace.setVisible(false);
+         btn_Leace.setVisible(false);
+         lbl_Leace.setVisible(false);
+         chk_DHCP.setVisible(false);
+         }else{
+        	 System.out.println("DHCP管理者だ");
+        	 cnt=1;
+        	 chk_DHCP.setSelected(true);
+        	 txt_Leace.setText(Login_Menu.Leacefile);
+         }
+    	Seikika=Client.GraghToProfile("graphToBlacklist");
+    	Seikika=Seikika.replace("[","");
+    	Seikika=Seikika.replace("]","");
+    	Seikika=Seikika.replace(" ","");
+    	ikeda=Seikika.split(",");
+    	for(int i =0;i<ikeda.length;i++){
+    		//リストイン
+    	items.add(ikeda[i]);
+    	}
+    	BLListView.setItems(items);
+    }
+    @FXML
+    protected void classdelete(){
+    	UserConfigure.items2.remove(choiceclass.getSelectionModel().getSelectedIndex());
+    }
+    
+    @FXML
+    protected void classinsert(){
+    	
+    	UserConfigure.items2.add(txt_Class.getText());
+    	txt_Class.setText("");
+    	
+    }
+    
+    @FXML
+    protected void choiceclass(){
+    	
+    }
+
+    @FXML
+    protected void ProSubscribe() {
+    	//プロフィールデータを登録する
+    	
+    	if(Client.ChgProfile( txt_ReNewname.getText(), txtpass_ReNewpass.getText(), txt_ReNewAddress.getText())==0){
+    		//通信先がデータを登録できなかった場合警告
+    		Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("登録に失敗しました");
+    		alert.show();
+    	}else{
+    		//通信先がデータを登録できなかった場合警告
+    		Alert alert   = new Alert(AlertType.INFORMATION);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("Success");
+    		alert.setContentText("登録に成功しました");
+    		alert.show();
+    		Login_Menu.Class=txt_Class.getText();
+    	}
+    	
+    }
+    
+    @FXML
+    protected void ProClear() {
+    	//プロフィール画面のテキストボックスをすべて削除
+    	txt_ReNewname.setText("");
+    	txtpass_ReNewpass.setText("");
+    	txtpass_ReNewcheck.setText("");
+    	txt_ReNewAddress.setText("");
+    	txt_Class.setText("");
+    	txt_Leace.setText("");
+    }
+    
+    @FXML
+    protected void ReturnGraph() {
+    	//グラフ画面へ戻る
+    	btn_ReNewReturn.getScene().getWindow().hide();
+    }
+    
+    @FXML
+    protected void BLDelete() {
+    	//削除ボタンのイベント
+    	if(Client.DeleateBL(BLListView.getSelectionModel().getSelectedItem())==0){
+    		//通信先が削除に失敗した場合、もしくは通信に失敗した場合警告をだす
+    		Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("削除に失敗しました");
+    		alert.show();
+    	}else{
+    		//削除に成功した場合リストから消す
+    		items.remove(BLListView.getSelectionModel().getSelectedIndex());
+    	}
+    	
+		//
+    }
+    
+    @FXML
+    protected void BLInsert() {
+    	
+    	if(txt_blacklist.getText().toString().equals("")){
+    	//空白の場合、警告文を出す。
+    	Alert alert   = new Alert(AlertType.WARNING);
+		alert.setTitle("Information Dialog");
+		alert.setHeaderText("警告");
+		alert.setContentText("ブラックリストに入れたいURLの一部を入力してください");
+		alert.show();
+		
+    	}else{
+    	int branch =Client.InsertBL(txt_blacklist.getText());
+    	if(branch==0){
+    		//通信先がブラックリストにデータを追加できなかった場合警告
+    		Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("インサートに失敗しました");
+    		alert.show();
+    	}else{
+    		//成功した場合リストにイン
+    		items.add(txt_blacklist.getText());
+        	txt_blacklist.setText("");
+    	}
+    	}
+    	}
+    @FXML
+    protected void Sanshow(){
+    	FileChooser fileChooser = new FileChooser();
+        
+    	fileChooser.setTitle("ファイル選択");
+    	// 拡張子フィルタを設定
+    	fileChooser.getExtensionFilters().add(
+    		new FileChooser.ExtensionFilter("リースファイル", "*.txt","*.leases")
+    	);
+    	fileChooser.getExtensionFilters().add(
+    		new FileChooser.ExtensionFilter("すべてのファイル", "*.*")
+    	);
+    	// 初期ディレクトリをホームにする。
+    	//fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+
+    	// ファイル選択
+    	File file = fileChooser.showOpenDialog(null);
+    	if(file != null) {
+    		System.out.println(file.getPath());
+    		txt_Leace.setText(file.getPath());
+    		
+    	}
+    }
+    @FXML
+    protected void HowToUse(){
+    	String uriString = "https://uca-software-japan.localinfo.jp/pages/1631318/page_201602191746"; // 開くURL
+		Desktop desktop = Desktop.getDesktop();
+		try{
+		  URI uri = new URI( uriString );
+		  desktop.browse( uri );
+		}catch( Exception e ){
+		  e.printStackTrace();
+		}
+    }
+    
+    @FXML
+    protected void DHCPCHECK() {
+    	cnt++;
+    	if(cnt%2==1){
+    	txt_Leace.setVisible(true);
+    	btn_Leace.setVisible(true);
+    	lbl_Leace.setVisible(true);
+    	}else{
+        txt_Leace.setVisible(false);
+        btn_Leace.setVisible(false);
+        lbl_Leace.setVisible(false);
+    	}
+    }
+    
+    @FXML
+    protected void BLTFclear() {
+    	
+    	txt_blacklist.setText("");
+        //ブラックリストに入れたいテキストボックスのクリア文
+    }
+}
+

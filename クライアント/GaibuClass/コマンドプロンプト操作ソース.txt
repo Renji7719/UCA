@@ -1,0 +1,113 @@
+仕様
+class controlCommandprompt
+　method void execCommandNotReturn(String cm)
+　　引数で指定したコマンドを実行
+　method boolean execCommandReturn(String cm,String filePath)
+　　第一引数で指定したコマンドを実行し、第二引数で指定したファイルパスに存在するテキストへ出力
+　　正常に執行できたかをstatusで返す。エラーメッセージはmessageに格納されている。
+　method  boolean checkBeforeWritefile(File file)
+　　引数で指定したファイルが存在しているかどうか、書き込み権限があるかどうかをbooleanで返す。
+class Catcher extends Thread
+コマンドプロンプトの実行結果を読み込むのに必要なクラス。
+
+------------------------------------------------------------------------------------------------------------------
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+
+
+public class controlCommandprompt{
+/*mothodが動くかどうかの確認のためのメインメソッド。
+	public static void main (String[]args) throws InterruptedException, IOException{
+        execCommandReturn("ping 127.0.0.1","C:\\test\\test.txt");
+		
+	}*/
+	
+	//戻り値がない、コマンドをただ実行すだけのメソッド cm:コマンドプロンプトで実行するコマンド
+	 public static void execCommandNotReturn(String cm) throws InterruptedException,
+     IOException {
+		 //コマンドプロンプトを起動してコマンド実行
+   ProcessBuilder pb = new ProcessBuilder("cmd", "/C", cm);
+   Process p = pb.start();
+   p.waitFor();
+   p.destroy();
+	 }
+	 
+	 //戻り値なし、コマンドを実行してfilePathで指定したテキストに出力結果を保存するメソッド
+	//cm:コマンドプロンプトで実行するコマンド filePath:ファイルのパスを指定（絶対パス）
+	 public static boolean execCommandReturn(String cm,String filePath)throws InterruptedException,IOException{
+		 boolean status = false;
+		 //messageは、ファイルが存在しないか、IOExeptionかどちらのエラーかを見極めるための変数
+		 String message;
+		 // /Cはコマンドプロンプトを閉じながら実行するやつ
+		 ProcessBuilder pb = new ProcessBuilder("cmd", "/C", cm);
+		   Process p = pb.start();
+   //実行されたコマンドの出力結果をバッファに読み込み
+   BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+   //Catcherのクラスにbrの領域を作る
+   Catcher c = new Catcher(br);
+   //Catcherをスタート
+   c.start();
+   //コマンドプロンプトのキャッシュを破棄
+   p.waitFor();
+   p.destroy();
+   
+   
+   //textへの書き込み
+     try{
+	      File file = new File(filePath);
+	      //ファイルが存在し、書き込み権限があるならtrue,ないならfalseを返すcheckBeforWriteFileメソッドを使い判定
+	      if (checkBeforeWritefile(file)){
+	        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+	        //テキストファイルにコマンドプロンプトの出力結果を出力
+	        pw.println(c.out.toString());
+	        pw.close();
+	        status = true;
+	        message="正常";
+	      }else{
+	        message="ファイルに書き込めません" ;
+	      }
+	      }catch(IOException e){
+	     message=e.toString();
+	    }
+	 return status;
+   
+  
+   
+ }
+	 //ファイルが存在したらtrue存在しなかったらfalseを返すメソッド
+	 private static boolean checkBeforeWritefile(File file){
+		    if (file.exists()){
+		      if (file.isFile() && file.canWrite()){
+		        return true;
+		      }
+		    }
+
+		    return false;
+		  }
+
+}
+//コマンドプロンプトの出力結果を読み込むために必要なクラス。
+class Catcher extends Thread {
+	  Reader in;
+	  StringWriter out = new StringWriter();
+	  public Catcher(Reader in) {
+	    this.in = in;
+	  }
+
+	  public void run() {
+	    int c;
+	    try {
+	      while ((c = in.read()) != -1) {
+	        out.write((char)c);
+	      }
+	    } catch (IOException e) {
+	      e.printStackTrace();
+	    }
+	  }
+}
+

@@ -1,0 +1,497 @@
+package application;
+
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.ResourceBundle;
+
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Series;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.Tooltip;
+import javafx.scene.effect.Glow;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+import javafx.util.Duration;
+
+public class Main_graph extends AnchorPane implements Initializable, Isee {
+    
+	@FXML
+	private Button Hostnamechange;
+
+	@FXML
+	private Button btn_HowToUse;
+	
+	@FXML
+	private Button btn_subgraph;
+	
+    @FXML
+    private Button btnRenew;
+    
+    @FXML
+    private Label label;
+    
+    @FXML
+    private BarChart<String, Integer> Bar;
+
+    @FXML
+    private CategoryAxis x;
+
+    @FXML
+    private NumberAxis y;
+    
+    @FXML
+    private Button LeaseUpButton;
+    
+    @FXML
+    private Button btn_Range5m;
+    
+    
+    public Main_graph() {
+        loadFxml("/fxml/main_graph.fxml");
+        //FXMLを読み込み
+    }
+    
+    public ArrayList<String> DBIP;
+    public ArrayList<?> URLTotal;
+    
+    static String GraphChecker;
+    //AllかNowか判断
+    static ArrayList<String> IPCount=new ArrayList<String>();
+    
+    static int CNTMemory;
+    //カウントを取得（ログイン時のみ）
+    
+    static String LOG;
+    private Tooltip tooltip;
+    static int  LOGINCNT  =0;
+    public Timeline tl =new Timeline();
+   static  XYChart.Series<String, Integer> Set1 = new XYChart.Series<String,Integer>();
+    static Series<String, Integer> Set2 = new XYChart.Series<String,Integer>();
+ 	@SuppressWarnings("unchecked")
+	@Override
+	public void initialize(URL url, ResourceBundle rb) {
+		boolean flag=true;
+		boolean flag2=true;
+		
+		
+		if(Login_Menu.Bunki=="2"){
+			btn_subgraph.setVisible(false);
+			btn_Range5m.setVisible(false);
+			
+		}
+		
+		
+		
+		if(Client.DHCPAdmin==1){
+			LeaseUpButton.setVisible(true);
+			 Hostnamechange.setVisible(false);
+			}else{
+	    	LeaseUpButton.setVisible(false);
+
+			 Hostnamechange.setVisible(true);
+	    	}
+		
+		
+		//ObservableList<Series<String, Integer>> data = FXCollections.observableArrayList();
+		
+
+		if(GraphChecker.contains("nodata")){
+			System.out.println("ログイン時初期地なし");
+			//Bar.getData().addAll(Set1);
+		
+			CNTMemory = 0;
+			LOG ="RESET";
+			GraphChecker="";
+		}else if(LOG.equals("LOGIN") ){
+		
+			System.out.println("ログイン時初期値あり");
+			String Seikika;
+	    	String[] TemIPCount;
+	    	
+	    	Seikika=GraphChecker;
+	    	Seikika=Seikika.replace("|",",");
+	    	Seikika=Seikika.replace("[","");
+	    	Seikika=Seikika.replace("]","");
+	    	Seikika=Seikika.replace(" ","");
+	    	TemIPCount=Seikika.split(",");
+	    	int TemIPLength=TemIPCount.length;
+	    	int count =Integer.parseInt(TemIPCount[TemIPLength-1]);
+	    	System.out.println(count);
+	    	IPCount.add(String.valueOf(count));
+	    	
+	    	for(int i =0;i<TemIPLength-1;i+=2){
+
+	    		
+	    		IPCount.add(TemIPCount[i]);
+	    		IPCount.add(TemIPCount[i+1]);
+	    	}
+	        CNTMemory=Integer.parseInt(IPCount.get(0));
+	        GraphChecker="";
+		}else if(GraphChecker.contains("[]") || LOG.equals("GOD")){
+	    	flag=false;
+	    
+	    	
+	    	System.out.println("更新要素なし");	
+	    	GraphChecker="";
+	    }else if(LOG.equals("nasi")){
+	    	
+	    		//NoData→ONData
+	    		System.out.println("NoData→ONData");
+	    		LOG="ari";
+	    		
+	    		
+	    		String Seikika;
+		    	String[] TemIPCount;
+		    	
+		    	Seikika=GraphChecker;
+		    	if(Login_Menu.Bunki=="2"){
+		    		Seikika=Seikika.replace("?",",");
+		    	}else{
+		    		Seikika=Seikika.replace("g",",");
+		    	}
+		    	Seikika=Seikika.replace("|",",");
+		    	Seikika=Seikika.replace("[","");
+		    	Seikika=Seikika.replace("]","");
+		    	Seikika=Seikika.replace(" ","");
+		    	TemIPCount=Seikika.split(",");
+		    	int TemIPLength=TemIPCount.length;
+		    	int count =Integer.parseInt(TemIPCount[TemIPLength-1]);
+		    	System.out.println(count);
+		    	IPCount.add(String.valueOf(count));
+		    	
+		    	for(int i =0;i<TemIPLength-1;i+=2){
+
+	        		
+		    		//正規化してIPと不正通信回数を配列にいれ、グラフの値に入れる。
+		    		
+		    		
+		    		IPCount.add(TemIPCount[i]);
+		    		IPCount.add(TemIPCount[i+1]);
+		    	}
+		        CNTMemory=Integer.parseInt(IPCount.get(0));
+		        //Main.getInstance().sendGraphController();
+		        GraphChecker="";
+		       // flag2=false;
+	    	}else{
+	    		
+	    		System.out.println("Renewal");
+		    	String[] TemIPCount;
+		    	
+		    	if(Login_Menu.Bunki=="2"){
+		    		GraphChecker=GraphChecker.replace("?",",");
+		    	}else{
+		    		GraphChecker=GraphChecker.replace("g",",");
+		    	}
+	        	GraphChecker=GraphChecker.replace("[","");
+	        	GraphChecker=GraphChecker.replace("]","");
+	        	GraphChecker=GraphChecker.replace("|",",");
+	        	GraphChecker=GraphChecker.replace(" ","");
+	        	
+	        	TemIPCount=GraphChecker.split(",");
+	        	System.out.println(GraphChecker);
+	        	
+	        	int TemIPLength=TemIPCount.length;
+	        	//サーバーから受け取った配列をすべて見る。
+	        	for(int i =0;i<TemIPLength-1;i+=2){
+	            	
+	            
+	            	//サーバーから受け取ったIPアドレスが既に存在するものかどうか調べて、存在していたら足しこみ
+	            	//存在していなかったら新たに配列に加える
+	              
+	            	if(IPCount.contains(TemIPCount[i])){
+	            		    int index=IPCount.indexOf(TemIPCount[i]);
+	            			int Count =Integer.parseInt(String.valueOf(IPCount.get(index+1)));
+	            			int TemCount = Integer.parseInt(TemIPCount[i+1]);
+	            			IPCount.set(index+1, String.valueOf(Count+TemCount));
+	            			
+	            			
+	            		}else{
+	         
+	            		IPCount.add(TemIPCount[i]);
+	            		IPCount.add(TemIPCount[i+1]);
+	            	}
+	        	
+	            	}
+	        	
+	        	CNTMemory=Integer.parseInt(TemIPCount[TemIPLength-1]);
+	        	IPCount.set(0, String.valueOf(CNTMemory));
+	        	
+	        	
+	        	//Main.getInstance().sendGraphController();
+	        	GraphChecker="";
+	        	flag2=false;
+	        	}	
+		
+		if(flag==true){
+			Set1.getData().clear();
+			
+		for(int i =1;i<5;i++){
+			
+			if(flag2==false){
+				
+				tl.getKeyFrames().add(new KeyFrame(Duration.millis(100), 
+				    (ActionEvent actionEvent) -> {
+				        Bar.getData().stream().forEach((series) -> {
+				            series.getData().stream().forEach((data) -> {
+				            	
+				            	
+				            		data.setExtraValue(Set1.getData().get(0));
+				            	
+				                
+				            });
+				        });
+				    }
+				));
+				
+				tl.setCycleCount(Animation.INDEFINITE);
+				tl.setAutoReverse(true);
+				tl.play();
+				flag2 = true;
+			}else{
+				for(int i2=1;i2<IPCount.size();i2+=2){
+					Set1.getData().add(new XYChart.Data<>(IPCount.get(i2),Integer.parseInt(IPCount.get(i2+1))));
+	        	}
+				
+				Bar.getData().clear();
+				Bar.getData().addAll(Set1);
+			}
+			
+			
+		}
+	
+		}else{
+			Bar.getData().clear();
+			Bar.getData().addAll(Set1);
+		}
+		 final Label caption = new Label("");
+         caption.setTextFill(Color.DARKORANGE);
+         caption.setStyle("-fx-font: 24 arial;");
+
+         tooltip = new Tooltip("");
+
+         tooltip.setStyle("-fx-font: 14 arial;  -fx-font-smoothing-type: lcd;");// -fx-text-fill:black; -fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+
+
+ 
+        for (final XYChart.Data<String, Integer> data : Set1.getData()) {
+        	Tooltip.install(data.getNode(),tooltip);
+            applyMouseEvents(data);
+            }
+		}
+    @FXML
+    public void renewpage() {
+    	//更新コマンド
+    	//危険触るな
+
+		Date date = new Date();
+    	String DateStringer =String.valueOf(date);
+
+    	GraphChecker=Client.ReNewButton(DateStringer,String.valueOf(CNTMemory));
+    	
+    	if(CNTMemory==0){
+    		LOG="nasi";
+    	}else{
+    		LOG="ari";
+    	}
+    	
+		
+    	Main.getInstance().sendGraphController();
+    	 
+    }
+    
+    @FXML
+    protected void Range5min() throws InterruptedException, IOException {
+    	TextInputDialog textIn  = new TextInputDialog();
+    	textIn.setHeaderText("範囲を何分にしますか？");
+    	textIn.setTitle("何分？");
+    	
+        String str                     = textIn.showAndWait().orElse("");
+        try{
+        if(str.equals("")){
+        	Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("数値をいれてください");
+    		alert.show();
+        }else {
+    	Date date = new Date();
+    	String DateStringer =String.valueOf(date);
+    	String[] spritter = null;
+    	boolean renewcheck=true;
+    	String POPOUT=Client.PopUpButton(DateStringer, String.valueOf(CNTMemory),Integer.parseInt(str));
+    	if(POPOUT.contains("[]")){
+    	renewcheck=false;
+    	}
+    	if(CNTMemory==0){
+    		LOG="nasi";
+    	}else{
+    		LOG="ari";
+    	}
+    	POPOUT=POPOUT.replace("[", "");
+    	POPOUT=POPOUT.replace("]", "");
+    	POPOUT=POPOUT.replace(" ", "");
+    	POPOUT=POPOUT.replace("|", ",");
+    	if(Login_Menu.Bunki=="2"){
+    		POPOUT=POPOUT.replace("?",",");
+    	}else{
+    		POPOUT=POPOUT.replace("g",",");
+    	}
+    	POPOUT=POPOUT.replace("*", ",");
+    	spritter =POPOUT.split(",");
+    	if(renewcheck==true){
+    	for(int i = 0;i<spritter.length-3;i++){
+    		GraphChecker+=( spritter[i]+",");
+    	}
+
+    	GraphChecker+=spritter[spritter.length-3];
+
+		renewcheck=true;
+    	}else{
+    		GraphChecker+=("[]");
+    	}
+    	System.out.println(GraphChecker);
+    	
+    	Alert alert   = new Alert(AlertType.INFORMATION);
+		alert.setTitle("Information Dialog");
+		alert.setHeaderText("確認");
+		alert.setContentText("不正通信が一番多いのは" + spritter[spritter.length-2] +" の " + spritter[spritter.length-1] +" 回です。");
+		alert.show();
+    	Main.getInstance().sendGraphController();
+    	
+        }
+        }catch(NumberFormatException e){
+
+        	Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("数字をいれてください");
+    		alert.show();
+        }
+    }
+    
+    @FXML
+    protected void Logout() throws InterruptedException, IOException {
+    	//ログアウト処理、Squidをストップし、ログイン画面(Login_Menu)へ
+    	Set1.getData().clear();
+    	IPCount.clear();
+    	LOGINCNT = 0;
+    	Client.LeaceReturnMax=0;
+    	Login_Menu.Leacefile="";
+    	//hostnameire.addAll(null);
+    	tl.setAutoReverse(false);
+    	controlcommandprompt.execCommandNotReturn("@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"Start-Process C:\\UCA\\Exe\\stopSquid.exe -Verb runas\"");
+    	Main.getInstance().sendLogout();
+    }
+    
+    
+    @FXML
+    protected void GraphToProfile() {
+    	//プロフィール変更画面（UserConfigure）へ
+    	Main.getInstance().GraphAndGraph(this.getScene().getWindow());
+    }
+    
+    @FXML
+    protected void GoSubGraph() {
+    	//サブグラフ（SubGraph）へ
+    	Main.getInstance().GraphAndSubGraph(this.getScene().getWindow());
+    }
+    
+    @FXML
+    protected void gethostname() {
+    	//サブグラフ（SubGraph）へ
+    	Runtime rt=Runtime.getRuntime();
+		try {
+			rt.exec(new String[]{"C:\\UCA\\Exe\\netenum4\\NetEnum.exe"});
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+    }
+    
+    
+    @FXML
+    protected void LeaseUpdate() {
+    	//プロフィール変更画面（UserConfigure）へ
+    	Client.LeaseUpDate();
+    	if(Integer.parseInt(Client.LeaseCheck)!=Client.LeaceReturnMax){
+    		//既存のリースファイルMax値と通信先から送られたMax
+    		Client.LeaceReturnMax=Integer.parseInt(Client.LeaseCheck);
+    		Alert alert   = new Alert(AlertType.INFORMATION);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("Success");
+    		alert.setContentText("リースファイルの更新に成功しました。");
+    		alert.show();
+    	}else{
+    		Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("Oops");
+    		alert.setContentText("リースファイルは更新済みです。");
+    		alert.show();
+    	}
+    }
+    
+    private void applyMouseEvents(final XYChart.Data<String, Integer> data) {
+
+        final Node node = data.getNode();
+
+        node.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent arg0) {
+                node.setEffect(new Glow());
+                String styleString = "-fx-border-color: white; -fx-border-width: 3; -fx-border-style: dashed;";
+                node.setStyle(styleString);
+	    					tooltip.setText(String.valueOf(data.getXValue() + "\n 不正通信回数:" +data.getYValue()) +"回"); 
+             
+            }
+        });
+
+        node.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent arg0) {
+                node.setEffect(null);
+                node.setStyle("");
+            }
+        });
+
+        
+    }
+    
+    @FXML
+    protected void HowToUse(){
+    	//ボタンを押すとURLが開く
+    	String uriString = "https://uca-software-japan.localinfo.jp/pages/1631356/page_201802051216"; // 開くURL
+		Desktop desktop = Desktop.getDesktop();
+		try{
+		  URI uri = new URI( uriString );
+		  desktop.browse( uri );
+		}catch( Exception e ){
+		  e.printStackTrace();
+		}
+    }
+    
+   
+    
+}
+

@@ -1,0 +1,49 @@
+仕様
+class controlFile
+　method boolean moveFile(String beforeMove,String afterMove)
+　　第一引数で指定したファイルパスに存在するファイルを第二引数で指定した位置に移動する。
+　　なお、このメソッドだけでファイル名も変更できるから、fileRenameクラスはいらないのでコメントアウト。
+　method boolean fileRename(String beforeRename,String afterRename)
+　　第一引数で指定したファイルパスの名前を、第二引数で指定したファイルパスの名前に変更。
+　--------------------------------------------------------------------------------------------------------------------------------
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+public class controlFile {
+	public static boolean moveFile(String beforeMove,String afterMove){
+		boolean status=false;
+		// 移動元のファイル名
+		Path form = Paths.get(beforeMove);
+		// 移動先のファイル
+		Path to = Paths.get(afterMove);
+		// hoge.txtをtmp/hoge.txtに移動
+		try {
+			Files.move(form, to);
+			status=true;
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+				}
+		return status;
+	}
+
+	/*public static boolean fileRename(String beforeRename,String afterRename){
+		boolean status = false;
+		 //変更前ファイル名
+	      File fileA = new File(beforeRename);
+	      
+	      //変更後のファイル名
+	      File fileB = new File(afterRename);
+
+	      
+	      if(fileA.renameTo(fileB)){
+	         //ファイル名変更成功
+	         status=true;
+	      }
+	      return status;
+	}*/
+
+}

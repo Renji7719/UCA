@@ -1,0 +1,23 @@
+package application;
+
+
+import java.io.IOException;
+
+import javafx.fxml.FXMLLoader;
+
+public interface Isee {
+	
+	
+	default void loadFxml(String fxml) {
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource(fxml));
+        fxmlLoader.setRoot(this);
+        fxmlLoader.setController(this);
+        try {
+            fxmlLoader.load();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
+        }
+	}
+	
+	
+}

@@ -1,0 +1,140 @@
+package application;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class LogSeiki {
+	static ArrayList seikikaLog;
+	static ArrayList ipinfo;
+	public static void main(String[]args) throws IOException{
+		Seikika("C:\\test\\test.txt","C:\\test\\test3.csv",58);
+	}
+public static ArrayList Seikika(String inputCsvFile,String outputCsvFile,int ReserveCnt){
+		
+
+		final String ChangeName = "sashihara";
+		final String ChangedName = "sashiko";
+		
+		
+			String line;
+			String[] csvArray;
+			File inputFile = new File(inputCsvFile);
+			File outputFile = new File(outputCsvFile);
+			seikikaLog = new ArrayList();
+			ipinfo = new ArrayList();
+			BufferedReader in = null;
+			BufferedWriter out = null;
+			int cntman = 0;
+			try {
+				in = new BufferedReader(new FileReader(inputFile));
+				out = new BufferedWriter(new FileWriter(outputFile));
+				
+				/** １行ずつ読み込んで整形する */
+				int cnt = 1;
+				
+				String Time;
+				String URL;
+				while ((line = in.readLine()) != null){
+					StringBuilder sb1 = new StringBuilder(line);
+					
+					    
+					// 検索する文字列を用意
+			        String str = sb1.toString();
+			 
+			        // 正規表現のパターンを作成
+			        Pattern p = Pattern.compile("([1-2]?[0-9]{0,2}\\.){3,3}[1-2]?[0-9]{0,2}");
+			        
+			        Matcher m = p.matcher(str);
+			      while(m.find()){
+			        
+			        if(ipinfo.contains(m.group())==false){
+			    		  
+			        	ipinfo.add(m.group());
+			    		  System.out.println(m.group());
+			    	  }
+			        
+			        
+			       
+			        
+			        str=str.replace("[", ",");
+			        str=str.replace("]", ",");
+			        str=str.replace("+0900", "");
+			        str=str.replaceAll("-", "");
+			        str=str.replace("CONNECT", "");
+			        str=str.replace("\"", "");
+			        str=str.replace(" ", "");
+			        /*
+		       		str=(sb1.delete(1,6)).toString();
+					str=(sb1.delete(27,33)).toString();
+					str=(sb1.insert(34,",")).toString();
+					line=cnt+","+seikikaLog+","+str;*/
+			        line=cnt+","+str;
+			        if(cnt>ReserveCnt){
+			        	seikikaLog.add(line);
+			        }
+			      }
+						cnt++;
+					
+					
+					
+					//区切り文字カンマ[,]で、区切られた文字列を配列に格納する
+					csvArray = line.split("\\,");
+					
+					//配列の長さ分、データを出力していく
+					for(int i=0; i < csvArray.length; i++){
+						
+						//行の最後のデータはカンマ付けない
+						if(i != csvArray.length -1 ){
+							if(ChangeName.equals(csvArray[i])){
+								//[sashihara]は[sashiko]に変換して出力する
+								csvArray[i] = ChangedName;
+								out.write(csvArray[i]);
+								out.write(",");
+							}else{
+								out.write(csvArray[i]);
+								out.write(",");
+							}
+						} else{
+							out.write(csvArray[i]);
+						}
+					}
+					//newLineは改行する合図
+					out.newLine();
+				}
+				 Iterator<String> it = seikikaLog.iterator();
+			        while (it.hasNext()) {
+			        	System.out.println("お");
+			            System.out.println(it.next());
+			        }
+			}catch(FileNotFoundException e){
+				e.printStackTrace();
+			}catch(IOException e){
+				e.printStackTrace();
+			}finally{
+				//fanallyは絶対実行される。とりあえずファイルは閉じるように。
+				try{
+					if (in != null){
+						in.close();
+					}
+					if(out != null){
+						out.close();
+					}
+				}catch(IOException e){
+					System.out.println("close fail");
+					e.printStackTrace();
+				}
+			}
+			return seikikaLog;
+			
+			
+		}
+}

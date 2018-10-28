@@ -1,0 +1,693 @@
+package application;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+//クライアントサンプルプログラム
+//サーバーに接続し、メッセージを送信する。
+//サーバーアドレスはコマンドラインの第1引数で指定。
+//ポートは30000に固定。先にMultiServerSampleを起動しておくこと。
+//第2引数で、メッセージを指定する。一行送ってサーバーからの
+//メッセージ受信，表示後にプログラム終了する。
+//コマンドライン例：java MultiClientSample localhost abcdefg
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Scanner;
+
+
+
+public class Client
+{
+	static Socket socket = new Socket();
+		static String ParentID;
+		static int Port=30008;
+		static String NewIP;
+		static int LeaceReturnMax;
+		static String LeaseCheck;
+		static String DefineIP="10.206.2.174";
+		static int DHCPAdmin;
+	public static int Login(String Name , String Pass){
+		//ログイン処理
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		String[]ReturnJudge;
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.178");
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("loginMenu");
+		information.add("loginButton");
+		information.add(Name);
+		information.add(Pass);
+		ParentID =Name;
+		String ReturnID ;
+		
+      try {
+  	  	connection(DefineIP,Port,socket);
+    	//connectionメソッド呼び出し
+    	ReturnID=ConfiSelectgArrayList(information,socket);
+    	//ConfiSelectgArrayListでサーバーへ通信、情報受け取り
+    	//ログイン成功か否か(1なら成功),DHCP管理者か否か(1なら管理者),リース情報をどこまで見たか(MaxCount),リースファイルの絶対パス
+  	  	ReturnID=ReturnID.replace("/","");
+  	  	ReturnJudge=ReturnID.split(",");
+  	  	DHCPAdmin=Integer.parseInt(ReturnJudge[1]);
+  	  	if(DHCPAdmin==1){
+  	  	LeaceReturnMax=Integer.parseInt(ReturnJudge[2]);
+  	  System.out.println(LeaceReturnMax);
+  	  Login_Menu.Leacefile=ReturnJudge[3];
+
+    	Login_Menu.Leacefile=Login_Menu.Leacefile.replace("*", " ");
+  	  	}
+    	  	if(ReturnJudge[0].equals("1")){
+    	  		System.out.println("ログイン成功");
+    	  	}else{
+    	  		System.out.println("ログイン失敗");
+    	  	}
+
+
+    	  	
+    	  	
+    	  	
+    	  	//終了処理
+    	  	socket.close();
+    	  	return Integer.parseInt(ReturnJudge[0]);
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return 0;
+      }
+	}
+
+	public static int Subscribe(String NameP ,String Name ,String Pass ,String Mail )
+	{
+		//通常のクライアントとして登録
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add("10.206.2.177");
+		ipAddress.add(DefineIP);
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("sign_up");
+		information.add("Subscribe");
+		information.add(NameP);
+		information.add(Name);
+		information.add(Pass);
+		information.add(Mail);
+		information.add("0");
+		information.add("null");
+		
+		String ReturnID="0";
+		String[] ReturnJudge;
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	ReturnID =ConfiSelectgArrayList(information,socket);
+    	  	//ReturnID→成功か否か/登録時のIP
+    	  	if(ReturnID.contains("1,")){
+    	  		System.out.println("新規登録成功");
+    	  	}else{
+    	  		System.out.println("新規登録失敗");
+    	  	}
+    	  	ReturnID=ReturnID.replace("/","");
+    	  	ReturnJudge=ReturnID.split(",");
+    	  	
+    	  	NewIP=ReturnJudge[1];
+    	  	
+    	  	
+
+    	  	//終了処理
+    	  	socket.close();
+    	  	return Integer.parseInt(ReturnJudge[0]);
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return 0;
+      }
+     
+	}
+	
+	public static int SubscribeDHCP(String NameP ,String Name ,String Pass ,String Mail )
+	{
+		//DHCP管理者として登録
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.177");
+		String tempLeace=Login_Menu.Leacefile;
+		tempLeace=tempLeace.replace(" ", "*");
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("sign_up");
+		information.add("Subscribe");
+		information.add(NameP);
+		information.add(Name);
+		information.add(Pass);
+		information.add(Mail);
+		information.add("1");
+		information.add(tempLeace);
+		String ReturnID="0";
+		String[] ReturnJudge;
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	
+    	  	ReturnID =DHCPKoushin(information,socket,SeikikaLeace.squidRevise(Login_Menu.Leacefile,LeaceReturnMax));
+    	  	if(ReturnID.contains("1")){
+    	  		System.out.println("新規登録成功");
+    	  	}else{
+    	  		System.out.println("新規登録失敗");
+    	  	}
+    	  	ReturnID=ReturnID.replace("/","");
+    	  	ReturnJudge=ReturnID.split(",");
+    	  	
+    	  	NewIP=ReturnJudge[1];
+    	  	
+    	  	
+
+    	  	//終了処理
+    	  	socket.close();
+    	  	return Integer.parseInt(ReturnJudge[0]);
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return 0;
+      }
+     
+	}
+	
+	public static int ChgProfile(String Name ,String Pass ,String Mail )
+	{
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("profile");
+		information.add("Subscribe");
+		information.add(ParentID);
+		information.add(Name);
+		information.add(Pass);
+		information.add(Mail);
+		information.add(String.valueOf(DHCPAdmin));
+		information.add(Login_Menu.Leacefile);
+		int ReturnID=0;
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	ReturnID=translationPutArrayList(information,socket);
+    	  	if(ReturnID == 1){
+    	  		System.out.println("チェンジ成功");
+    	  	}else{
+    	//  		chgyourinfo = false;
+    	  		System.out.println("チェンジ失敗");
+    	  	}
+    	  	
+    	  	//終了処理
+    	  	socket.close();
+    	  	
+      return ReturnID;
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return ReturnID;
+      }
+	}
+	
+	public static String GraghToProfile(String Command)
+	{
+		//boolean chgyourinfo = true;
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add(Command);
+		information.add(ParentID);
+		
+		
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    		String ReturnProf;
+    		ReturnProf =ConfiSelectgArrayList(information,socket);
+    	  	
+    	  	//終了処理
+    	  	socket.close();
+      return ReturnProf;
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return "e";
+      }
+	}
+	
+	public static int InsertBL(String InsertKeyWord)
+	{
+		int insertID = 0;
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add("10.206.2.177");
+		ipAddress.add(DefineIP);
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("graphInBlacklist");
+		information.add("insertButton");
+		information.add(ParentID);
+		information.add(InsertKeyWord);
+		
+		
+
+      try {
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+
+      	  insertID=translationPutArrayList(information,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	if(insertID == 1){
+    	  		System.out.println("インサート成功");
+    	  	}else{
+    	  		System.out.println("Insert失敗");
+    	  	}
+    	  	//終了処理
+    	  	socket.close();
+
+    	  	return insertID;
+    	  	
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return insertID;
+      }
+	}
+	
+	public static int DeleateBL(String DeleteKeyWord)
+	{
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		int returnID = 0;
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.178");
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("graphInBlacklist");
+		information.add("deleteButton");
+		information.add(ParentID);
+		information.add(DeleteKeyWord);
+		
+		
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	returnID=translationPutArrayList(information,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	if(returnID == 1){
+    	  		System.out.println("デリート成功");
+    	  	}else{
+    	  		System.out.println("Delete失敗");
+    	  	}
+    	  	
+    	  	//終了処理
+    	  	socket.close();
+      
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  
+      }
+	return returnID;
+	}
+	
+	public static String MenuToGraph(String bunki,String date )
+	{
+		//boolean chgyourinfo = true;
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("MenuToGraph");
+		information.add("GoGraphButton");
+		information.add(bunki);
+		information.add(ParentID);
+		information.add(date);
+		
+		
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	String ReturnGraph;
+    		ReturnGraph =ConfiSelectgArrayList(information,socket);
+    	  	
+    	  	//終了処理
+    	  	socket.close();
+      return ReturnGraph;
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return e.toString();
+      }
+	}
+	
+	public static void LeaseUpDate(){
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.178");
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("Graph");
+		information.add("leaseUpButton");
+		information.add(ParentID);
+		
+		
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	 System.out.println(LeaceReturnMax);
+    	  	LeaseCheck=DHCPKoushin(information,socket,SeikikaLeace.squidRevise(Login_Menu.Leacefile,LeaceReturnMax));
+    	  	
+    	  	
+    	  	
+
+    	  	//終了処理
+    	  	socket.close();
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+      }
+	}
+	
+	public static String ReNewButton(String date,String CNT )
+	{
+		//boolean chgyourinfo = true;
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		
+		ipAddress.add("10.206.2.178");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("RenewalGraph");
+		if(Login_Menu.Bunki=="2"){
+		information.add("RenewalBlackButton");
+		}else{
+		information.add("RenewalButton");
+		}
+		information.add(ParentID);
+		information.add(date);
+		
+		
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	String ReturnGraph;
+    	  	ReturnGraph =KoushinKun(information,LogSeiki.Seikika("C:\\squid\\var\\logs\\access.log","C:\\squid\\var\\logs\\access.csv",Integer.parseInt(CNT)),socket);
+    	  	
+    		//終了処理
+    	  	socket.close();
+      return ReturnGraph;
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return e.toString();
+      }
+	}
+	
+	
+	public static String PopUpSubGraph(String Date,String CNT )
+	{
+		//boolean chgyourinfo = true;
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add(DefineIP);
+		ipAddress.add("10.206.2.177");
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("RenewalGraph");
+		information.add("PercentButton");
+		information.add(ParentID);
+		information.add(Date);
+		information.add(Login_Menu.Bunki);
+		
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	String ReturnGraph;
+    	  	ReturnGraph =KoushinKun(information,LogSeiki.Seikika("C:\\squid\\var\\logs\\access.log","C:\\squid\\var\\logs\\access.csv",Integer.parseInt(CNT)),socket);
+    	  	
+    		//終了処理
+    	  	socket.close();
+      return ReturnGraph;
+      }
+      catch (IOException e) {
+    	  e.printStackTrace();
+    	  return e.toString();
+      }
+	}
+	
+	
+	
+	public static String PopUpButton(String date,String CNT,int str )
+	{
+		//boolean chgyourinfo = true;
+		Socket socket = new Socket();
+		Scanner sc = new Scanner(System.in);
+		ArrayList<String> ipAddress = new ArrayList<String>();
+		ipAddress.add("10.206.2.174");
+		ipAddress.add("10.206.2.178");
+		ipAddress.add("10.206.2.177");
+		ipAddress.add(DefineIP);
+
+		ArrayList<String> information = new ArrayList<String>();
+		information.add("RenewalGraph");
+		information.add("PopUpButton");
+		information.add(ParentID);
+		information.add(date);
+		information.add(String.valueOf(str));
+		
+
+      try {
+
+    	  	//connectionメソッド呼び出し
+    	  	connection(DefineIP,Port,socket);
+    	  	//transrationメソッド呼び出してif文で処理
+    	  	String ReturnGraph;
+    		ReturnGraph =KoushinKun(information,LogSeiki.Seikika("C:\\squid\\var\\logs\\access.log","C:\\squid\\var\\logs\\access.csv",Integer.parseInt(CNT)),socket);
+    	  	
+    	  	//終了処理
+    	  	socket.close();
+      return ReturnGraph;
+      }
+      catch (IOException e) {
+    	  String ReturnGraph;
+    	  ReturnGraph = "nodata";
+    	  return ReturnGraph;
+      }
+	}
+	
+	
+	static void connection(String severAddress,int PORT,Socket socket)throws IOException{
+		//アドレス情報を保持するsocketAddressを作成。
+		//ポート番号は30000
+	      InetSocketAddress socketAddress =
+	    		  new InetSocketAddress(severAddress,PORT);
+
+	      //socketAddressの値に基づいて通信に使用するソケットを作成する。
+
+
+	      //タイムアウトは10秒(10000msec)
+	      	socket.connect(socketAddress, 10000);
+
+	      	//接続先の情報を入れるInetAddress型のinadrを用意する。
+	      	InetAddress inadr;
+
+	      	//inadrにソケットの接続先アドレスを入れ、nullである場合には
+	      	//接続失敗と判断。
+	      	//nullでなければ、接続確立。
+	      	if ((inadr = socket.getInetAddress()) != null) {
+	      		System.out.println("Connect to " + inadr);
+	      	}else {
+	      		System.out.println("Connection failed.");
+	      		return;
+	      	}
+
+	}
+
+	static int translationPutArrayList(ArrayList<String> sendMessage,Socket socket)throws IOException{
+		//メッセージの送信処理
+		//PrintWriter型のwriterに、ソケットの出力ストリームを渡す。(Auto Flush)
+		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+		//ソケットの入力ストリームをBufferedReaderに渡す。
+		BufferedReader rd = new BufferedReader(
+				new InputStreamReader( socket.getInputStream()));
+		
+		System.out.println("Send message: " + sendMessage);
+		
+		//ソケットから出力する。
+		writer.println(sendMessage);
+		//もしPrintWriterがAutoFlushでない場合は，以下が必要。
+		//  writer.flush();
+
+		//サーバーからのメッセージ読み取り
+		String getline=rd.readLine();
+		System.out.println("Message from Server:" + getline);
+
+
+		//終了処理
+		writer.close();
+		return Integer.parseInt(getline);
+	}
+	
+	static String DHCPKoushin(ArrayList<String> sendMessage,Socket socket,ArrayList<String> sendMessage2)throws IOException{
+		//メッセージの送信処理
+		//PrintWriter型のwriterに、ソケットの出力ストリームを渡す。(Auto Flush)
+		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+		//ソケットの入力ストリームをBufferedReaderに渡す。
+		BufferedReader rd = new BufferedReader(
+				new InputStreamReader( socket.getInputStream()));
+		
+		System.out.println("Send message: " + sendMessage);
+		System.out.println("Send message: " + sendMessage2);
+		//ソケットから出力する。
+		writer.println(sendMessage + "," + sendMessage2.toString());
+		//もしPrintWriterがAutoFlushでない場合は，以下が必要。
+		//  writer.flush();
+
+		//サーバーからのメッセージ読み取り
+		String getline=rd.readLine();
+		System.out.println("Message from Server:" + getline);
+
+
+		//終了処理
+		writer.close();
+		return getline;
+	}
+	
+	static String ConfiSelectgArrayList(ArrayList<String> sendMessage,Socket socket)throws IOException{
+		//メッセージの送信処理
+		//PrintWriter型のwriterに、ソケットの出力ストリームを渡す。(Auto Flush)
+		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+		//ソケットの入力ストリームをBufferedReaderに渡す。
+		BufferedReader rd = new BufferedReader(
+				new InputStreamReader( socket.getInputStream()));
+		
+		System.out.println("Send message: " + sendMessage);
+		
+		//ソケットから出力する。
+		writer.println(sendMessage);
+		//もしPrintWriterがAutoFlushでない場合は，以下が必要。
+		//  writer.flush();
+
+		//サーバーからのメッセージ読み取り
+		String getline=rd.readLine();
+		System.out.println("Message from Server:" + getline);
+
+
+		//終了処理
+		writer.close();
+		return getline;
+	}
+	
+	
+	
+	
+	
+	
+	static String KoushinKun(ArrayList<String> sendMessage,ArrayList<String> sendMessage2,Socket socket)throws IOException{
+		//メッセージの送信処理
+		//PrintWriter型のwriterに、ソケットの出力ストリームを渡す。(Auto Flush)
+		PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+		//ソケットの入力ストリームをBufferedReaderに渡す。
+		BufferedReader rd = new BufferedReader(
+				new InputStreamReader( socket.getInputStream()));
+		
+		System.out.println("Send message: " + sendMessage);
+		if(LogSeiki.ipinfo.size()!=0){
+		System.out.println(LogSeiki.ipinfo.size());
+		String ipkun = "";
+		for(int i=0;i<LogSeiki.ipinfo.size();i++){
+			ipkun+=(LogSeiki.ipinfo.get(i) + ",");
+			
+		}
+		
+		
+		System.out.println("送信メッセージ→"+sendMessage +","+LogSeiki.ipinfo.size()+","+ipkun+ sendMessage2.toString());
+		//ソケットから出力する。
+		writer.println(sendMessage +","+LogSeiki.ipinfo.size()+","+ipkun+ sendMessage2.toString());
+		//もしPrintWriterがAutoFlushでない場合は，以下が必要。
+		//  writer.flush();
+		}else{
+			System.out.println("送信メッセージ→"+sendMessage +",0"+ sendMessage2.toString());
+			writer.println(sendMessage +",0"+ sendMessage2.toString());
+		}
+		//サーバーからのメッセージ読み取り
+		String getline=rd.readLine();
+		System.out.println("Message from Server:" + getline);
+
+
+		//終了処理
+		writer.close();
+		return getline;
+	}
+}

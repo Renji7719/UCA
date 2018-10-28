@@ -1,0 +1,183 @@
+package application;
+
+import java.awt.Desktop;
+import java.net.URI;
+import java.net.URL;
+import java.util.Date;
+import java.util.ResourceBundle;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.chart.PieChart;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.effect.Glow;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.paint.Color;
+
+public class sub_graph extends AnchorPane implements Initializable, Isee{
+
+	private PieChart.Data selectedData;
+	
+	@FXML
+	private PieChart Ratio;
+	@FXML
+	private Button btn_HowToUse;
+	
+	private Tooltip tooltip;
+	
+	
+	public sub_graph() {
+        loadFxml("/fxml/sub_graph.fxml");
+        //FXMLを読み込み;
+        
+    }
+	
+	@Override
+    public void initialize(URL url, ResourceBundle rb) {
+		
+		String piedata;
+		boolean renewcheck = true;
+		String[]piedata2;
+		Date date = new Date();
+    	String DateStringer =String.valueOf(date);
+    	
+		piedata=Client.PopUpSubGraph(DateStringer,String.valueOf(Main_graph.CNTMemory));
+		if(piedata.contains("[]")){
+	    	renewcheck=false;
+	    	}
+		if(Main_graph.CNTMemory==0){
+    		Main_graph.LOG="nasi";
+    	}else{
+    		Main_graph.LOG="ari";
+    	}
+		piedata=piedata.replace("g",",");
+    	piedata=piedata.replace("[","");
+    	piedata=piedata.replace("]","");
+    	piedata=piedata.replace("|",",");
+    	piedata=piedata.replace("*", ",");
+    	piedata=piedata.replace(" ","");
+    	
+    	piedata2=piedata.split(",");
+    	if(renewcheck==true){
+        	for(int i = 0;i<piedata2.length-3;i++){
+        		Main_graph.GraphChecker+=(piedata2[i]+",");
+        	}
+
+        	Main_graph.GraphChecker+=piedata2[piedata2.length-3];
+
+    		renewcheck=true;
+        	}else{
+        		Main_graph.GraphChecker+=("[]");
+        	}
+        	System.out.println(Main_graph.GraphChecker);
+        	Double Bl=Double.valueOf(piedata2[piedata2.length-2]);
+        	Double Wh=Double.valueOf(piedata2[piedata2.length-1])-Integer.parseInt(piedata2[piedata2.length-2]);
+        	Double To=Double.valueOf(piedata2[piedata2.length-1]);
+        	Double Temp;
+        	Double Temp2;
+        	/*
+        	Temp=(Bl/To)*10000;
+        	Math.round(Temp);
+        	Temp=Temp/100;
+        	Double Temp2;
+        	Temp2=(Wh/To)*10000;
+        	Math.round(Temp2);
+        	Temp2=Temp2/100;
+        	*/
+        	ObservableList<PieChart.Data> pieChartData;
+        	Temp=Bl/To;
+        	System.out.println(Temp);
+        	String after = String.format("%.4f",Temp);
+        	System.out.println(after+"---------------------------------------");
+        	Temp=Double.parseDouble(after);
+        	Temp2=1-Temp;
+        	String before = String.format("%.4f",Temp2);
+        	if(To==0){
+        		pieChartData =
+                        FXCollections.observableArrayList(
+                        new PieChart.Data("不正通信回数 "+0+"%",0 ),//
+                        new PieChart.Data("普通通信回数"+0+"%", 0));
+        	}else{
+        	pieChartData =
+                    FXCollections.observableArrayList(
+                    new PieChart.Data("不正通信回数 "+String.format("%.2f",Double.parseDouble(after)*100)+"%",Bl ),//
+                    new PieChart.Data("普通通信回数"+String.format("%.2f",Double.parseDouble(before)*100)+"%", Wh));//
+        	}
+        	System.out.println(pieChartData);
+        	
+        	Ratio.getData().addAll(pieChartData);
+        	 final Label caption = new Label("");
+             caption.setTextFill(Color.DARKORANGE);
+             caption.setStyle("-fx-font: 24 arial;");
+
+             tooltip = new Tooltip("");
+
+             tooltip.setStyle("-fx-font: 14 arial;  -fx-font-smoothing-type: lcd;");// -fx-text-fill:black; -fx-background-color: linear-gradient(#e2ecfe, #99bcfd);");
+
+
+     
+            for (final PieChart.Data data : Ratio.getData()) {
+            	Tooltip.install(data.getNode(),tooltip);
+                applyMouseEvents(data);
+            }
+        	Main.getInstance().sendGraphController();
+        	
+            }
+	@FXML
+    protected void HowToUse(){
+    	//ボタンを押すとURLが開く
+    	String uriString = "https://uca-software-japan.localinfo.jp/pages/1631356/page_201802051216"; // 開くURL
+		Desktop desktop = Desktop.getDesktop();
+		try{
+		  URI uri = new URI( uriString );
+		  desktop.browse( uri );
+		}catch( Exception e ){
+		  e.printStackTrace();
+		}
+    }
+    	
+	private void applyMouseEvents(final PieChart.Data data) {
+
+        final Node node = data.getNode();
+
+        node.setOnMouseEntered(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent arg0) {
+                node.setEffect(new Glow());
+                String styleString = "-fx-border-color: white; -fx-border-width: 3; -fx-border-style: dashed;";
+                node.setStyle(styleString);
+                tooltip.setText(String.valueOf(data.getName() + "\n" + (int)data.getPieValue()) + "\n"  ); 
+            }
+        });
+
+        node.setOnMouseExited(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent arg0) {
+                node.setEffect(null);
+                node.setStyle("");
+            }
+        });
+
+        node.setOnMouseReleased(new EventHandler<MouseEvent>() {
+
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                    selectedData = data;
+                    System.out.println("Selected data " + selectedData.toString());
+            }
+        });
+    }
+
+	}
+	
+	
+

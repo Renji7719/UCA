@@ -1,0 +1,379 @@
+package application;
+
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.ResourceBundle;
+
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.FileChooser;
+
+
+public class Login_Menu extends AnchorPane implements Initializable, Isee {
+    
+	 private  String prm ="";
+	    
+	    
+	    @FXML
+	    private Label label;
+	    
+	   
+	    
+	    
+	    public Login_Menu() {
+	        loadFxml("/fxml/Login_Menu.fxml");
+	    }
+	    
+	    public Login_Menu(String prm) {
+	        this.prm = prm;
+	        loadFxml("/fxml/Login_Menu.fxml");
+	        
+	    }
+	    
+    //LoginのFieldを取得
+    @FXML
+    public TextField txt_name;
+    
+    @FXML
+    public Button btn_Leace;
+    
+    @FXML
+    public TextField txtpass_pass;
+    
+    //NewSubのFieldを取得
+    @FXML
+    private TextField txt_Newname;
+    
+    @FXML
+    private TextField txtpass_Newpass;
+    
+    @FXML
+    private TextField txt_Address;
+    
+    @FXML
+    private TextField txtpass_NewCheck;
+    
+    @FXML
+    private TextField txt_NewID;
+
+    @FXML
+    private Button btn_Howtouse;
+    
+    @FXML
+    private TextField txt_Leace;
+    
+    @FXML
+    private CheckBox chk_DHCP;
+    
+    
+    @FXML
+    private TextField txt_Class;
+    
+    @FXML
+    private Label lbl_Leace;
+    
+    @FXML
+    private Button btnclassdelete;
+    
+    @FXML
+    private Button btnclassinsert;
+    
+    @FXML
+    private ChoiceBox choiceclass;
+    
+    @FXML
+    private ImageView imglogo;
+    
+    static String Class,Port,Leacefile,Bunki;
+    
+    @SuppressWarnings("unchecked")
+	@Override
+    public void initialize(URL url, ResourceBundle rb) {
+       // this.lblsubscribe.setText(this.prm);
+    	UserConfigure.items2.clear();
+        txt_Leace.setVisible(false);
+        btn_Leace.setVisible(false);
+        lbl_Leace.setVisible(false);
+        choiceclass.setItems(UserConfigure.items2);
+        
+    }
+   
+    
+    
+    @FXML
+    public void setonLogin() throws InterruptedException, IOException {
+    	//ログイン処理
+		//controlcommandprompt.execCommandReturn("ping 127.0.0.1","C:\\work\\test.txt");//test用
+    	if(txt_name.getText().equals("")){
+    		//名前欄が空欄の場合
+    		Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("名前を入力してください");
+    		alert.show();
+    	}else if(txtpass_pass.getText().equals("")){
+    		//パス欄が空欄の場合
+    		Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("パスワードを入力してください");
+    		alert.show();
+    	}else if(Client.Login(txt_name.getText() , txtpass_pass.getText())==0){
+    		//ログインに失敗した場合
+    		Alert alert   = new Alert(AlertType.WARNING);
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("ログインに失敗しました。");
+    		alert.show();
+    	}else{
+         ArrayList<String>       list    = new ArrayList<String>();
+         list.add( "今から" );
+         list.add( "すべて" );
+         list.add( "ブラックリストごと" );
+         ChoiceDialog<String>    choice  = new ChoiceDialog<String>( list.get( 0 ) , list );
+     	choice.setHeaderText("いつからログを監視しますか？");
+     	choice.setTitle("確認");
+         String str= choice.showAndWait().orElse("");
+         String DateStringer;
+         if(str==""){
+        	 Alert alert   = new Alert(AlertType.INFORMATION);
+     		alert.setTitle("Information Dialog");
+     		alert.setHeaderText("確認");
+     		alert.setContentText("ログイン画面へ戻りました");
+     		alert.show();
+         }else if(str=="今から"){
+        	 Bunki="1";
+        	 controlcommandprompt.execCommandNotReturn("@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"Start-Process C:\\UCA\\Exe\\cashSquid.exe -Verb runas\"");
+        	 controlcommandprompt.execCommandNotReturn("@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"Start-Process C:\\UCA\\Exe\\startSquid.exe -Verb runas\"");
+       	 Date date = new Date();
+       	DateStringer=date.toString();
+       Main_graph.GraphChecker=Client.MenuToGraph(Bunki, DateStringer);
+        Main_graph.LOG = "LOGIN";
+        Main.getInstance().sendGraphController();
+         }else if(str=="ブラックリストごと"){
+        	 Bunki="2";
+        	 controlcommandprompt.execCommandNotReturn("@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"Start-Process C:\\UCA\\Exe\\cashSquid.exe -Verb runas\"");
+        	 controlcommandprompt.execCommandNotReturn("@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"Start-Process C:\\UCA\\Exe\\startSquid.exe -Verb runas\"");
+       	 Date date = new Date();
+       	DateStringer=date.toString();
+       Main_graph.GraphChecker=Client.MenuToGraph(Bunki, DateStringer);
+        Main_graph.LOG = "LOGIN";
+        Main.getInstance().sendGraphController();
+         }else{
+        	 Bunki="0";
+        	 controlcommandprompt.execCommandNotReturn("@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"Start-Process C:\\UCA\\Exe\\cashSquid.exe -Verb runas\"");
+        	 controlcommandprompt.execCommandNotReturn("@powershell -NoProfile -ExecutionPolicy unrestricted -Command \"Start-Process C:\\UCA\\Exe\\startSquid.exe -Verb runas\"");
+        	 Date date = new Date();
+            DateStringer=date.toString();
+            Main_graph.GraphChecker=Client.MenuToGraph(Bunki, DateStringer);
+            Main_graph.LOG = "LOGIN";
+            Main.getInstance().sendGraphController();
+            }
+    	}
+    	}
+    	
+    
+    @FXML
+    protected void subscribe() throws IOException, InterruptedException {
+    	String checker1=txtpass_Newpass.getText();
+    	String checker2=txtpass_NewCheck.getText();
+    	if(txt_Newname.getText().equals("")){
+    		//名前欄がKARAの場合
+    		Alert alert   = new Alert(AlertType.WARNING);
+
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("名前を入力してください");
+    		alert.show();
+    	}else if(txtpass_Newpass.getText().equals("")){
+    		//パス欄がKARAの場合
+    		Alert alert   = new Alert(AlertType.WARNING);
+
+    		alert.setTitle("Information Dialog");
+    		alert.setHeaderText("警告");
+    		alert.setContentText("パスワードを入力してください");
+    		alert.show();
+    	}else if(checker1.equals(checker2)){
+    		if(DHCPcnt%2==1){
+    			Leacefile =txt_Leace.getText();
+        		Leacefile.replace("\\","\\\\");
+    			if(Client.SubscribeDHCP(txt_NewID.getText(),txt_Newname.getText(),txtpass_Newpass.getText(),txt_Address.getText())==0){
+        			//なんか失敗した場合
+            		Alert alert   = new Alert(AlertType.WARNING);
+
+            		alert.setTitle("Information Dialog");
+            		alert.setHeaderText("警告");
+            		alert.setContentText("新規登録に失敗しました");
+            		alert.show();
+            	}else{
+            		//成功した場合
+            		boolean flag =true;
+            		
+        			int cnt=0;
+            		while( flag ){
+            			if(cnt == 0){
+                cnt++;
+            			}else{
+            				flag =false;
+            			}
+            			}
+            		
+            		Main.getInstance().sendSubscribe();
+            	Alert alert   = new Alert(AlertType.INFORMATION);
+
+        		alert.setTitle("Information Dialog");
+        		alert.setHeaderText("Success");
+        		alert.setContentText("新規登録に成功しました");
+        		alert.show();
+        		Class=txt_Class.getText();
+            	}
+    	    	}else{
+    	    		if(Client.Subscribe(txt_NewID.getText(),txt_Newname.getText(),txtpass_Newpass.getText(),txt_Address.getText())==0){
+    	    			//なんか失敗した場合
+    	        		Alert alert   = new Alert(AlertType.WARNING);
+
+    	        		alert.setTitle("Information Dialog");
+    	        		alert.setHeaderText("警告");
+    	        		alert.setContentText("新規登録に失敗しました");
+    	        		alert.show();
+    	        	}else{
+    	        		//成功した場合
+    	        		boolean flag =true;
+
+    	    			int cnt=0;
+    	        		while( flag ){
+    	        			if(cnt == 0){
+    	            cnt++;
+    	        			}else{
+    	        				flag =false;
+    	        			}
+    	        			}
+    	        		
+    	        		Main.getInstance().sendSubscribe();
+    	        	Alert alert   = new Alert(AlertType.INFORMATION);
+
+    	    		alert.setTitle("Information Dialog");
+    	    		alert.setHeaderText("Success");
+    	    		alert.setContentText("新規登録に成功しました");
+    	    		alert.show();
+    	    		Class=txt_Class.getText();
+    	        	}
+    	    	}
+    		
+    	}else{
+
+        	//パスとパスチェックが違っていた場合
+        	Alert alert   = new Alert(AlertType.WARNING);
+        	alert.setTitle("Information Dialog");
+        	alert.setHeaderText("警告");
+        	alert.setContentText("パスワードが合っていません");
+        	alert.show();
+    	
+    	}
+    }
+    @FXML
+    protected void NSFieldClear() {
+    	txt_Newname.setText("");
+    	txtpass_Newpass.setText("");
+    	txtpass_NewCheck.setText("");
+    	txt_Address.setText("");
+    	txt_NewID.setText("");
+    	txt_Leace.setText("");
+    	txt_Class.setText("");
+    }
+    
+    
+    @FXML
+    protected void LFieldClear() {
+    	txt_name.setText("");
+    	txtpass_pass.setText("");
+    }
+    int DHCPcnt=0;
+    @FXML
+    protected void CHECKDHCP(){
+    	DHCPcnt++;
+    	if(DHCPcnt%2==1){
+    	txt_Leace.setVisible(true);
+    	btn_Leace.setVisible(true);
+    	lbl_Leace.setVisible(true);
+    	}else{
+        txt_Leace.setVisible(false);
+        btn_Leace.setVisible(false);
+        lbl_Leace.setVisible(false);
+    	}
+    }
+    @FXML
+    protected void Sanshow(){
+    	FileChooser fileChooser = new FileChooser();
+        
+    	fileChooser.setTitle("ファイル選択");
+    	// 拡張子フィルタを設定
+    	fileChooser.getExtensionFilters().add(
+    		new FileChooser.ExtensionFilter("リースファイル", "*.txt","*.leases")
+    	);
+    	fileChooser.getExtensionFilters().add(
+    		new FileChooser.ExtensionFilter("すべてのファイル", "*.*")
+    	);
+    	// 初期ディレクトリをホームにする。
+    	fileChooser.setInitialDirectory(new File(System.getProperty("user.home")));
+
+    	// ファイル選択
+    	File file = fileChooser.showOpenDialog(null);
+    	if(file != null) {
+    		System.out.println(file.getPath());
+    		txt_Leace.setText(file.getPath());
+    		
+    	}
+    }
+    @FXML
+    protected void HOWTOUSE(){
+    	String uriString = "https://uca-software-japan.localinfo.jp/pages/1631318/page_201602191746"; // 開くURL
+		Desktop desktop = Desktop.getDesktop();
+		try{
+		  URI uri = new URI( uriString );
+		  desktop.browse( uri );
+		}catch( Exception e ){
+		  e.printStackTrace();
+		}
+    	
+    }
+    @FXML
+    protected void classdelete(){
+    	UserConfigure.items2.remove(choiceclass.getSelectionModel().getSelectedIndex());
+    }
+    
+    @FXML
+    protected void classinsert(){
+    	
+    	UserConfigure.items2.add(txt_Class.getText());
+    	txt_Class.setText("");
+    	
+    }
+    
+    @FXML
+    protected void choiceclass(){
+    	
+    }
+    
+   // @FXML
+   // protected void handleButtonActionOpenModal() {
+    //	Main.getInstance().GraphAndGraph(this.getScene().getWindow());
+    //}
+    
+    
+}
