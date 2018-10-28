@@ -1,0 +1,1173 @@
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+
+
+public class InsertUpdateDelete {
+	public static int TEMBlackUpdatelast(String name) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE blacklist_tbl SET TEM_Cnt =0 WHERE name_id = '"+name+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	       
+	       
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	      
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 5;
+
+	}
+	public static int TEMBlackUpdate(int count,String name,String keywords) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE blacklist_tbl SET TEM_Cnt =? WHERE name_id = '"+name+"' and BlackKeywords='"+keywords+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        ps.setInt(1, count);
+	       
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	      
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 5;
+
+	}
+	public static int updateNowState(String name) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE account_tbl SET NowState=now() WHERE name_id = '"+name+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	       
+
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	      
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 4;
+
+	}
+	public static int insertMac(String Mac,String name) throws Exception{
+
+
+        //変数定義
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        //DB接続情報を設定する
+        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+        String id1 = "ren";    //ログインID
+        String pw = "ren";  //ログインパスワード
+
+        //SQL文を定義する
+       String sql = "INSERT INTO macucc_tbl(Macaddress,name_id,UCC_MACCNT,TEM_CNT) values(?, ?,0,0)";
+       
+
+        try {
+            //JDBCドライバをロードする
+            Class.forName("com.mysql.jdbc.Driver" );
+
+            //DBへのコネクションを作成する
+            conn = DriverManager.getConnection(path, id1, pw);
+            conn.setAutoCommit(false);  //オートコミットはオフ
+
+            //実行するSQL文とパラメータを指定する
+            ps = conn.prepareStatement(sql);
+            
+            ps.setString(1,Mac);
+            ps.setString(2,name);
+           
+           
+
+            //INSERT文を実行する
+            ps.executeUpdate();
+
+           
+
+            //コミット
+            conn.commit();
+
+        } catch (Exception ex) {
+            //例外発生時の処理
+            //conn.rollback();       //ロールバックする
+            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+        } finally {
+            //クローズ処理
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+		return 2;
+
+    }
+	
+	
+	public static int macCountUpdate(int count,String name,String Mac) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE macucc_tbl SET TEM_CNT = TEM_CNT+? WHERE name_id = '"+name+"' and Macaddress='"+Mac+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        ps.setInt(1, count);
+
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	      
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 4;
+
+	}
+	public static int updateLastMacucc(String name,String Macaddress,int cnt) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE macucc_tbl SET UCC_MACCNT = UCC_MACCNT+? ,TEM_CNT=0 WHERE name_id = '"+name+"' and Macaddress='"+Macaddress+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        ps.setInt(1,cnt);
+	       
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	        System.out.println("結果：" + i);
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 5;
+
+	}
+	public static void updateLeaseMax(String name,int Max) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE account_tbl SET leaseMax=leaseMax + "+Max+" where name_id='"+name+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        
+
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	      
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		
+
+	}
+	public static int insertlease(String Date,String Mac,String IPaddress,String name) throws Exception{
+
+
+        //変数定義
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        //DB接続情報を設定する
+        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+        String id1 = "ren";    //ログインID
+        String pw = "ren";  //ログインパスワード
+
+        //SQL文を定義する
+       String sql = "insert into leace_tbl values(STR_TO_DATE(?,'%Y/%m/%d*%H:%i:%s'),?,?)";
+       
+
+        try {
+            //JDBCドライバをロードする
+            Class.forName("com.mysql.jdbc.Driver" );
+
+            //DBへのコネクションを作成する
+            conn = DriverManager.getConnection(path, id1, pw);
+            conn.setAutoCommit(false);  //オートコミットはオフ
+
+            //実行するSQL文とパラメータを指定する
+            ps = conn.prepareStatement(sql);
+            ps.setString(1,Date);
+            ps.setString(2,Mac);
+            ps.setString(3, IPaddress+","+name);
+            
+            
+            //INSERT文を実行する
+            ps.executeUpdate();
+
+           
+
+            //コミット
+            conn.commit();
+
+        } catch (Exception ex) {
+            //例外発生時の処理
+            //conn.rollback();       //ロールバックする
+            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+        } finally {
+            //クローズ処理
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+		return 1;
+
+    }
+	public static int insertBlacklist(String name,String blackKeywords) throws Exception{
+
+
+        //変数定義
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        //DB接続情報を設定する
+        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+        String id1 = "ren";    //ログインID
+        String pw = "ren";  //ログインパスワード
+
+        //SQL文を定義する
+       String sql = "INSERT INTO blacklist_tbl(name_id,BlackKeywords,Class_cd,Sclass_cd,Flg_BK,HIT_Cnt,TEM_Cnt) values(?, ?,0,0,0,0,0)";
+       
+
+        try {
+            //JDBCドライバをロードする
+            Class.forName("com.mysql.jdbc.Driver" );
+
+            //DBへのコネクションを作成する
+            conn = DriverManager.getConnection(path, id1, pw);
+            conn.setAutoCommit(false);  //オートコミットはオフ
+
+            //実行するSQL文とパラメータを指定する
+            ps = conn.prepareStatement(sql);
+            
+            ps.setString(1,name);
+            ps.setString(2,blackKeywords);
+           
+           
+
+            //INSERT文を実行する
+            ps.executeUpdate();
+
+           
+
+            //コミット
+            conn.commit();
+
+        } catch (Exception ex) {
+            //例外発生時の処理
+            //conn.rollback();       //ロールバックする
+            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+        } finally {
+            //クローズ処理
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+		return 2;
+
+    }
+	public static void squidlogUpdate(String name,String black) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE squidlog_tbl SET Black_flag = 1 WHERE name_id = '"+name+"' and URL_log like concat(concat('%','"+black+"'),'%')";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        
+
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	      
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		
+
+	}
+	 public static boolean execCommandReturn(String line,String filePath)throws InterruptedException,IOException{
+		 boolean status = false;
+		 //messageは、ファイルが存在しないか、IOExeptionかどちらのエラーかを見極めるための変数
+		 String message;
+		
+   
+   
+   //textへの書き込み
+     try{
+	      File file = new File(filePath);
+	      //ファイルが存在し、書き込み権限があるならtrue,ないならfalseを返すcheckBeforWriteFileメソッドを使い判定
+	      if (checkBeforeWritefile(file)){
+	        PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+	        //テキストファイルにコマンドプロンプトの出力結果を出力
+	        pw.println(line);
+	        pw.close();
+	        status = true;
+	        message="正常";
+	      }else{
+	        message="ファイルに書き込めません" ;
+	      }
+	      }catch(IOException e){
+	     message=e.toString();
+	    }
+	 return status;
+   
+  
+   
+ }
+	 //ファイルが存在したらtrue存在しなかったらfalseを返すメソッド
+	 private static boolean checkBeforeWritefile(File file){
+		    if (file.exists()){
+		      if (file.isFile() && file.canWrite()){
+		        return true;
+		      }
+		    }
+
+		    return false;
+		  }
+
+
+//コマンドプロンプトの出力結果を読み込むために必要なクラス。
+class Catcher extends Thread {
+	  Reader in;
+	  StringWriter out = new StringWriter();
+	  public Catcher(Reader in) {
+	    this.in = in;
+	  }
+
+	  public void run() {
+	    int c;
+	    try {
+	      while ((c = in.read()) != -1) {
+	        out.write((char)c);
+	      }
+	    } catch (IOException e) {
+	      e.printStackTrace();
+	    }
+	  }
+}
+
+
+	public static int updateLastIPucc(String name,String IPaddress,int cnt) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE ipucc_tbl SET UCC_IPCNT = UCC_IPCNT+? ,TEM_CNT=0 WHERE name_id = '"+name+"' and IPaddress='"+IPaddress+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        ps.setInt(1,cnt);
+	       
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	        System.out.println("結果：" + i);
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 5;
+
+	}
+	public static int hitBlackUpdate(int count,String name,String keywords) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE blacklist_tbl SET HIT_Cnt = HIT_Cnt+? WHERE name_id = '"+name+"' and BlackKeywords='"+keywords+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        ps.setInt(1, count);
+	       
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	      
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 5;
+
+	}
+	public static int temCntUpdate(int count,String name,String IPaddress) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE ipucc_tbl SET TEM_CNT =? WHERE name_id = '"+name+"' and IPaddress='"+IPaddress+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	        ps.setInt(1, count);
+	       
+	        
+
+	        //UPDATE文を実行する
+	        int i = ps.executeUpdate();
+
+	        //処理件数を表示する
+	        System.out.println("結果：" + i);
+
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 5;
+
+	}
+	public static int updateMaxCnt(String name) throws Exception{
+
+	    //変数定義
+	    Connection conn = null;
+	    PreparedStatement ps = null;
+
+	    //DB接続情報を設定する
+	    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	    String id = "ren";    //ログインID
+	    String pw = "ren";  //ログインパスワード
+
+	    //SQL文を定義する
+	    String sql = "UPDATE account_tbl SET Max_Cnt="+Select.MaxSelect(name)+" WHERE name_id = '"+name+"'";
+
+	    try{
+	        //JDBCドライバをロードする
+	        Class.forName("com.mysql.jdbc.Driver");
+
+	        //DBへのコネクションを作成する
+	        conn = DriverManager.getConnection(path, id, pw);
+	        conn.setAutoCommit(false);  //オートコミットはオフ
+
+	        //実行するSQL文とパラメータを指定する
+	        ps = conn.prepareStatement(sql);
+	       
+	        
+
+	        //UPDATE文を実行する
+	        
+	        ps.executeUpdate();
+
+	       
+	        //コミット
+	        conn.commit();
+
+	    } catch (Exception ex) {
+	        //例外発生時の処理
+	        conn.rollback();       //ロールバックする
+	        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	    } finally {
+	        //クローズ処理
+	        if (ps != null) ps.close();
+	        if (conn != null) conn.close();
+	    }
+		return 5;
+
+	}
+
+	public static int ipCountUpdate(int count,String name,String IPaddress) throws Exception{
+
+    //変数定義
+    Connection conn = null;
+    PreparedStatement ps = null;
+
+    //DB接続情報を設定する
+    String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+    String id = "ren";    //ログインID
+    String pw = "ren";  //ログインパスワード
+
+    //SQL文を定義する
+    String sql = "UPDATE ipucc_tbl SET TEM_CNT = TEM_CNT+? WHERE name_id = '"+name+"' and IPaddress='"+IPaddress+"'";
+
+    try{
+        //JDBCドライバをロードする
+        Class.forName("com.mysql.jdbc.Driver");
+
+        //DBへのコネクションを作成する
+        conn = DriverManager.getConnection(path, id, pw);
+        conn.setAutoCommit(false);  //オートコミットはオフ
+
+        //実行するSQL文とパラメータを指定する
+        ps = conn.prepareStatement(sql);
+        ps.setInt(1, count);
+
+        
+
+        //UPDATE文を実行する
+        int i = ps.executeUpdate();
+
+        //処理件数を表示する
+      
+
+        //コミット
+        conn.commit();
+
+    } catch (Exception ex) {
+        //例外発生時の処理
+        conn.rollback();       //ロールバックする
+        ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+    } finally {
+        //クローズ処理
+        if (ps != null) ps.close();
+        if (conn != null) conn.close();
+    }
+	return 4;
+
+}
+
+	
+		public static int insertIPaddress(String IPaddress,String name) throws Exception{
+
+
+	        //変数定義
+	        Connection conn = null;
+	        PreparedStatement ps = null;
+
+	        //DB接続情報を設定する
+	        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	        String id1 = "ren";    //ログインID
+	        String pw = "ren";  //ログインパスワード
+
+	        //SQL文を定義する
+	       String sql = "INSERT INTO ipucc_tbl(IPaddress,name_id,UCC_IPCNT,TEM_CNT) values(?, ?,0,0)";
+	       
+
+	        try {
+	            //JDBCドライバをロードする
+	            Class.forName("com.mysql.jdbc.Driver" );
+
+	            //DBへのコネクションを作成する
+	            conn = DriverManager.getConnection(path, id1, pw);
+	            conn.setAutoCommit(false);  //オートコミットはオフ
+
+	            //実行するSQL文とパラメータを指定する
+	            ps = conn.prepareStatement(sql);
+	            
+	            ps.setString(1,IPaddress);
+	            ps.setString(2,name);
+	           
+	           
+
+	            //INSERT文を実行する
+	            ps.executeUpdate();
+
+	           
+
+	            //コミット
+	            conn.commit();
+
+	        } catch (Exception ex) {
+	            //例外発生時の処理
+	            //conn.rollback();       //ロールバックする
+	            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	        } finally {
+	            //クローズ処理
+	            if (ps != null) ps.close();
+	            if (conn != null) conn.close();
+	        }
+			return 2;
+
+	    }
+	public static int insertSquidlog(int cnt,String ipAddress,String time,String URL,String name) throws Exception{
+
+
+        //変数定義
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        //DB接続情報を設定する
+        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+        String id1 = "ren";    //ログインID
+        String pw = "ren";  //ログインパスワード
+
+        //SQL文を定義する
+       String sql = "insert into squidlog_tbl values(?,STR_TO_DATE(?,'%d/%b/%Y:%H:%i:%s'),?,?,1,1,?,?)";
+       
+
+        try {
+            //JDBCドライバをロードする
+            Class.forName("com.mysql.jdbc.Driver" );
+
+            //DBへのコネクションを作成する
+            conn = DriverManager.getConnection(path, id1, pw);
+            conn.setAutoCommit(false);  //オートコミットはオフ
+
+            //実行するSQL文とパラメータを指定する
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1,cnt);
+            ps.setString(2, time);
+            ps.setString(3, URL);
+            ps.setString(4, ipAddress);
+            ps.setInt(5, 0);
+            ps.setString(6, name);
+
+            //INSERT文を実行する
+            ps.executeUpdate();
+
+           
+
+            //コミット
+            conn.commit();
+
+        } catch (Exception ex) {
+            //例外発生時の処理
+            //conn.rollback();       //ロールバックする
+            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+        } finally {
+            //クローズ処理
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+		return 3;
+
+    }
+	 public static int DeleteBlacklist(String black,String name) throws Exception{
+		 int i=0;
+
+	        //変数定義
+	        Connection conn = null;
+	        PreparedStatement ps = null;
+
+	        //DB接続情報を設定する
+	        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+	        String id = "ren";    //ログインID
+	        String pw = "ren";  //ログインパスワード
+
+	        //SQL文を定義する
+	        String sql = "DELETE FROM blacklist_tbl WHERE name_id = ? and BlackKeywords=?";
+
+	        try {
+	            //JDBCドライバをロードする
+	            Class.forName("com.mysql.jdbc.Driver");
+
+	            //DBへのコネクションを作成する
+	            conn = DriverManager.getConnection(path, id, pw);
+	            conn.setAutoCommit(false);  //オートコミットはオフ
+
+	            //実行するSQL文とパラメータを指定する
+	            ps = conn.prepareStatement(sql);
+	            ps.setString(1, name);
+	            ps.setString(2, black);
+
+	            //DELETE文を実行する
+	            i = ps.executeUpdate();
+
+	            //処理件数を表示する
+	            System.out.println("結果：" + i);
+
+	            //コミット
+	            conn.commit();
+
+	        } catch (Exception ex) {
+	            //例外発生時の処理
+	            conn.rollback();       //ロールバックする
+	            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+	        } finally {
+	            //クローズ処理
+	            if (ps != null) ps.close();
+	            if (conn != null) conn.close();
+	        }
+			return i;
+	 }
+
+	public static int InsertBlacklist(String blackKeywords,String name) throws Exception{
+		int i=0;
+
+
+        //変数定義
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        //DB接続情報を設定する
+        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+        String id1 = "ren";    //ログインID
+        String pw = "ren";  //ログインパスワード
+
+        //SQL文を定義する
+       String sql = "INSERT INTO blacklist_tbl values(?, ?, ?, ?,?,?,0)";
+       
+
+        try {
+            //JDBCドライバをロードする
+            Class.forName("com.mysql.jdbc.Driver" );
+
+            //DBへのコネクションを作成する
+            conn = DriverManager.getConnection(path, id1, pw);
+            conn.setAutoCommit(false);  //オートコミットはオフ
+
+            //実行するSQL文とパラメータを指定する
+            ps = conn.prepareStatement(sql);
+            ps.setString(1,name);
+            ps.setString(2,blackKeywords);
+            ps.setInt(3,0);
+            ps.setInt(4,0);
+            ps.setInt(5,0);
+            ps.setInt(6,0);
+            
+
+            //INSERT文を実行する
+           i= ps.executeUpdate();
+            
+           
+
+            //コミット
+            conn.commit();
+
+        } catch (Exception ex) {
+            //例外発生時の処理
+            //conn.rollback();       //ロールバックする
+            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+        } finally {
+            //クローズ処理
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+		return i;
+
+    }
+	
+	public static int accountUpdate(String name,String mail,String nameQ,String password,String ipAddress,String URL,int Admin) throws Exception{
+		int i=0;
+
+        //変数定義
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        //DB接続情報を設定する
+        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+        String id = "ren";    //ログインID
+        String pw = "ren";  //ログインパスワード
+
+        //SQL文を定義する
+        String sql = "UPDATE account_tbl SET name_pi = ?, mailadd = ? ,name_id = ?,password= ? ,Class_cd=?,"
+        		+ "Sclass_cd=?,Admin=?,URL=?,IPaddress=? WHERE name_id = ?";
+
+        try{
+            //JDBCドライバをロードする
+            Class.forName("com.mysql.jdbc.Driver");
+
+            //DBへのコネクションを作成する
+            conn = DriverManager.getConnection(path, id, pw);
+            conn.setAutoCommit(false);  //オートコミットはオフ
+
+            //実行するSQL文とパラメータを指定する
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setString(2,mail);
+            ps.setString(3,nameQ);
+            ps.setString(4,password);
+            ps.setInt(5, 0);
+            ps.setInt(6, 0);
+            ps.setInt(7, Admin);
+            ps.setString(8,URL);
+            ps.setString(9,ipAddress);
+            ps.setString(10,nameQ);
+
+            //UPDATE文を実行する
+            i = ps.executeUpdate();
+
+            //処理件数を表示する
+            System.out.println("結果：" + i);
+
+            //コミット
+            conn.commit();
+
+        } catch (Exception ex) {
+            //例外発生時の処理
+            conn.rollback();       //ロールバックする
+            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+        } finally {
+            //クローズ処理
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+		return i;
+
+    }
+
+	public static int insertUserAccount(String name,String mail ,String name_pri,String password,String ipAddress,String Admin,String URL) throws Exception{
+
+
+        //変数定義
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        //DB接続情報を設定する
+        String path = "jdbc:mysql://localhost/ucadb";  //接続パス
+        String id1 = "ren";    //ログインID
+        String pw = "ren";  //ログインパスワード
+        int i=0;
+
+        //SQL文を定義する
+       String sql = "INSERT INTO account_tbl values(?, ?, ?, ?, ?,?,?,?,?,?,0,'0000-00-00 00:00:00')";
+       
+
+        try {
+            //JDBCドライバをロードする
+            Class.forName("com.mysql.jdbc.Driver" );
+
+            //DBへのコネクションを作成する
+            conn = DriverManager.getConnection(path, id1, pw);
+            conn.setAutoCommit(false);  //オートコミットはオフ
+
+            //実行するSQL文とパラメータを指定する
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, name);
+            ps.setString(2, mail);
+            ps.setString(3, name_pri);
+            ps.setString(4, password);
+            ps.setInt(5, 0);
+            ps.setInt(6, 0);
+            ps.setString(7, Admin);
+            ps.setString(8,URL);
+            ps.setString(9, ipAddress);
+            ps.setInt(10,0);
+
+
+            //INSERT文を実行する
+            i=ps.executeUpdate();
+
+           
+
+            //コミット
+            conn.commit();
+
+        } catch (Exception ex) {
+            //例外発生時の処理
+            //conn.rollback();       //ロールバックする
+            ex.printStackTrace();  //エラー内容をコンソールに出力する
+
+        } finally {
+            //クローズ処理
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+		return i;
+
+    }
+	
+}

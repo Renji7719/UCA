@@ -1,0 +1,2342 @@
+
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+//複数接続Socket通信サンプルプログラム(サーバー)
+//クライアントからの接続を待ち、接続が行なわれたら
+//1行のデータを受け取り、コンソールに表示して接続を切断する。
+//複数のクライアントとの通信をスレッドにより行なう。
+//プログラム終了は，コマンドプロンプトでCTRL-C
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+public class ServerMain  
+{
+	
+public static void main(String[] args){
+    ServerSocket serverSoc = null;
+    
+    try {
+      // ポート番号は、30000
+      //ソケットを作成
+      serverSoc = new ServerSocket(30008);
+      boolean flag=true;
+
+      //クライアントからの接続を待機するaccept()メソッド。
+      //accept()は、接続があるまで処理はブロックされる。
+      //もし、複数のクライアントからの接続を受け付けるようにするには
+      //スレッドを使う。
+      //accept()は接続時に新たなsocketを返す。これを使って通信を行なう。
+      System.out.println("接続待ち ");
+      while(flag){
+        Socket socket=null;
+        socket = serverSoc.accept();
+        //accept()は、クライアントからの接続要求があるまでブロックする。
+        //接続があれば次の命令に移る。
+        //スレッドを起動し、クライアントと通信する。
+        new SrvThread(socket).start();
+       
+        System.out.println("新しい接続");
+      }
+    }
+    catch (IOException e) {
+      System.out.println("IOException!");
+      e.printStackTrace();
+    }
+    finally{
+      try{
+        if (serverSoc != null){
+          serverSoc.close();
+        }
+      }
+      catch (IOException ioex) {
+        ioex.printStackTrace();
+      }
+    }
+ }
+}
+
+class SrvThread extends Thread{
+private Socket soc;
+
+public SrvThread(Socket sct){
+  soc=sct;
+  System.out.println("Thread is Generated.  Connect to " +
+      soc.getInetAddress());
+
+}
+
+public void run(){
+	
+  try{
+	
+	  String name;String password;
+	 //socketからのデータはInputStreamReaderに送り、さらに
+    //BufferedReaderによってバッファリングする。
+    BufferedReader reader = new BufferedReader
+      (new InputStreamReader(soc.getInputStream()));
+    //Clientへの出力用PrintWriter
+    PrintWriter sendout = new PrintWriter(soc.getOutputStream(), true);
+    //データ読み取りと表示。
+    String line;
+    String NowDate;
+    int MaxCount = 0;
+    
+    line = reader.readLine();
+   
+    line=line.replace(" ", "");
+    line=line.replace("[","");
+    line=line.replace("]","");
+    System.out.println(line);
+   
+    String[] Reader=line.split(",");
+    //InsertUpdateDelete.execCommandReturn(line,"C:\\test\\test2.txt");
+ 
+    System.out.println(Reader[0]);
+    System.out.println(Reader[1]);
+
+    
+    
+    
+    
+    //ログイン処理
+    if((Reader[0].equals("loginMenu"))&&(Reader[1].equals("loginButton"))){
+    	
+    	name=Reader[2];password=Reader[3];
+    	//ログインできるならクライアントに1を返して、できないなら0を返す。
+    	String[] AdminArray=Select.loginSelect(name, password).split(",");
+    	System.out.println(AdminArray[0]);
+    	System.out.println(AdminArray[1]);
+    	if(AdminArray[1].equals("1")){
+    		if(Select.leaceA(name)==0){
+    			sendout.println(Select.loginSelect(name, password));
+    		}else{
+    			sendout.println(Select.loginSelect(name, password)+","+Select.leaceMaxCnt(name)+","+Select.selectURL(name));
+    			System.out.println(Select.loginSelect(name, password)+","+Select.leaceMaxCnt(name));
+    		}
+    	}else{
+    	sendout.println(Select.loginSelect(name, password));
+    	}
+    	
+    }else if((Reader[0].equals("sign_up"))&&(Reader[1].equals("Subscribe"))){
+    	/////////////////////////////////////////////////////////////////////////////////////////////////ユーザー登録処理
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	int result;
+    	String ipAddress;
+    	ipAddress=soc.getInetAddress().toString();
+    	ipAddress=ipAddress.replace("/","");
+    	result=InsertUpdateDelete.insertUserAccount(Reader[3],Reader[5],Reader[2],Reader[4],ipAddress,Reader[6],Reader[7]);
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"apple");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"google");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"gamewith");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"youtube");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"yahoo");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"game");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"ero");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"poruno");
+    	sendout.println(result+","+ soc.getInetAddress());
+    	if(Reader[6].equals("1")){
+    		int cnt =0;
+    		if(Reader.length>8){
+    		for(int i=8;i<Reader.length-1;i+=3){
+    			InsertUpdateDelete.insertlease(Reader[i+1],Reader[i+2],Reader[i],Reader[3]);
+    			cnt++;
+    		}
+    		System.out.println(cnt);
+    		InsertUpdateDelete.updateLeaseMax(Reader[3],cnt);
+    		}
+    	}
+    	if(result==1){
+    		System.out.println("ユーザ"+Reader[3]+"を登録しました");
+    	}else{
+    		System.out.println("ユーザー"+Reader[3]+"は登録できません");
+    	}
+    }else if((Reader[0].equals("profile"))&&(Reader[1].equals("Subscribe"))){
+    	//ログイン後のユーザー情報変更処理
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	if(Select.booleanAdmin(Reader[3])==0){
+    	int result;
+    	String ipAddress=soc.getInetAddress().toString();
+    	ipAddress=ipAddress.replace("/","");
+    	result=InsertUpdateDelete.accountUpdate(Reader[3],Reader[5],Reader[2],Reader[4],ipAddress,"",0);
+    	sendout.println(result);
+    	if(result==1){
+    		System.out.println("ユーザ"+Reader[3]+"のプロフィールを更新しました");
+    	}else{
+    		System.out.println("ユーザー"+Reader[3]+"更新できません");
+    	}
+    	}else{
+    		int result;
+        	String ipAddress=soc.getInetAddress().toString();
+        	ipAddress=ipAddress.replace("/","");
+        	result=InsertUpdateDelete.accountUpdate(Reader[3],Reader[5],Reader[2],Reader[4],ipAddress,Reader[7],Integer.parseInt(Reader[6]));
+        	sendout.println(result);
+        	if(result==1){
+        		System.out.println("ユーザ"+Reader[3]+"のプロフィールを更新しました");
+        	}else{
+        		System.out.println("ユーザー"+Reader[3]+"更新できません");
+        	}
+    	}
+    }
+     else if(Reader[0].equals("graphToProfile")){
+    	 //プロフィール変更画面
+     	//
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+    		sendout.println(Select.accountSelect("select name_pi,mailadd,name_id,Password from account_tbl where name_id='"+Reader[1]+"'")+","+ soc.getInetAddress());
+    		
+     }else if(Reader[0].equals("graphToBlacklist")){
+     	//ブラックリスト行ったとき
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	 sendout.println(Select.SelectProfileBlackList("select BlackKeywords from blacklist_tbl where name_id='"+Reader[1]+"'"));
+     }else if((Reader[0].equals("graphInBlacklist"))&&(Reader[1].equals("insertButton"))){
+     	//インサート処理
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	 //重複行をここで排除しようとしたが、意味がなかった。
+    	 //if(Select.Selecttilyouhuku(Reader[2],Reader[3])==1){
+         	//sendout.println(0);
+        // }else{
+    	 sendout.println(InsertUpdateDelete.InsertBlacklist(Reader[3],Reader[2]));
+    	 System.out.println(InsertUpdateDelete.InsertBlacklist(Reader[3],Reader[2]));
+        // }
+    }else if((Reader[0].equals("graphInBlacklist"))&&(Reader[1].equals("deleteButton"))){
+    	//ブラックリストデリート処理
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	sendout.println(InsertUpdateDelete. DeleteBlacklist(Reader[3],Reader[2]));
+    	
+    }else if((Reader[0].equals("MenuToGraph"))&&(Reader[1].equals("GoGraphButton"))&&(Reader[2].equals("0"))){
+    	//グラフ画面へ移行したときの処理（全て）
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	NowDate=Reader[4];
+    	
+    	System.out.println(Reader[4]);
+        System.out.println(Reader[3]);
+        //管理者権限アリなら
+    	if(Select.booleanAdmin(Reader[3])==1){
+    		if(Select.connectionSelectMac(Reader[3]).size()==0){
+        		sendout.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        		System.out.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        		}else{
+        	sendout.println(Select.connectionSelectMac(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        	System.out.println("b");
+        	System.out.println(Select.connectionSelectMac(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        	}
+    		
+    	}else{
+    	if(Select.connectionSelect(Reader[3]).size()==0){
+    		sendout.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    		System.out.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    		}else{
+    	sendout.println(Select.connectionSelect(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	System.out.println("b");
+    	System.out.println(Select.connectionSelect(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	}
+    	}
+    	System.out.println("正常にグラフ作成のためのデータをクライアントに受け渡しました。");
+    }else if((Reader[0].equals("MenuToGraph"))&&(Reader[1].equals("GoGraphButton"))&&(Reader[2].equals("1"))){
+    	//グラフ画面に移行したときの処理（今から）
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	NowDate=Reader[4];
+    	sendout.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	InsertUpdateDelete.updateNowState(Reader[3]);
+    	System.out.println("正常にグラフ作成のためのデータをクライアントに受け渡しました。");
+    }else if((Reader[0].equals("MenuToGraph"))&&(Reader[1].equals("GoGraphButton"))&&(Reader[2].equals("2"))){
+    	//グラフ画面へ移行したときの処理（ブラックリストごとの）
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	NowDate=Reader[4];
+    	
+    	System.out.println(Reader[4]);
+        System.out.println(Reader[3]);
+      
+    
+    		
+    	sendout.println(Select.ByblackList(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	System.out.println("b");
+    	System.out.println(Select.connectionSelect(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	
+    	
+    	System.out.println("正常にグラフ作成のためのデータをクライアントに受け渡しました。");
+    }else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("RenewalButton"))){
+    	//グラフの更新ボタンが押されたら。
+       	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	
+    	boolean flg=true;
+    	int Number=1;
+    	int length=Integer.parseInt(Reader[4]);
+    	while(flg){
+    		name=Reader[2];NowDate=Reader[3];
+        	ArrayList<String> blackIPaddress=new ArrayList<String>();
+    	
+    	if(Number==1){
+    	
+    	
+    	
+    	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+    		if(Select.booleanAdmin(Reader[2])==1){
+    			Number=2;
+    		}else{
+    	for(int j=5;j<length+5;j++){
+    		
+    		blackIPaddress.add(Reader[j]);
+    		
+    		if(Select.CheckIPaddress(name,Reader[j])!=1){
+    			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+    			}else{
+    				Number=2;
+    			}
+    	}
+    	Number=2;
+    		System.out.println("Number=1の処理成功");
+    	}
+    		
+    	}else if(Number==2){
+    	//ログファイルを差分だけインサートする処理
+    		
+    	for(int i=5+length;i<=Reader.length-1;i=i+4){
+    		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+    		
+    		  }
+    		
+    			  Number=3;
+    		System.out.println("Number=２の処理成功");
+    		  
+    			  
+    	}else if(Number==3){
+    	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+    	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+    	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+    	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+    		ArrayList<String> blackKeywords = new ArrayList<String>();
+    		blackKeywords=Select.SelectBlackKeywords(name);
+    		if(Select.booleanAdmin(name)==1){
+    			 for (int i=0;i<blackKeywords.size();i++) {
+    		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+    		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+    		        	for(int j=0;j<IPaddress.size();j++){
+    		        		String[] update;
+    		        		String tem;
+    		        		tem=IPaddress.get(j).toString();
+    		        		
+    		        		update=tem.split("g");
+    		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+    		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+    		        		System.out.println(update[0]+update[1]);
+    		        		System.out.println(update[1]);
+    		        		
+    		        		
+    		        		boolean flagw=true;
+    		        		int cnt=0;
+    		        		while(flagw){
+    		        			if(cnt==0){
+    		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+    		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+    		        				cnt++;
+    		        			}else{
+    		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+    		        				flagw=false;
+    		        			}
+    		        		}
+    		        		
+    		        		
+    		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+    		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+    		        		
+    		        			
+    		        		}
+    		        	
+    		        	//}
+    		            
+    		        }
+    			
+    		}else{
+    		for (int i=0;i<blackKeywords.size();i++) {
+        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        	for(int j=0;j<IPaddress.size();j++){
+        		String[] update;
+        		String tem;
+        		tem=IPaddress.get(j).toString();
+        		
+        		update=tem.split("g");
+        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		System.out.println(update[0]+update[1]);
+        		System.out.println(update[1]);
+        		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		
+        			
+        		}
+        	
+        	//}
+            
+        }
+    		}
+        Number=4;
+        System.out.println("Number=3の処理成功");
+    	}else if(Number==4){
+    		boolean flag=true;
+    		int cnt=0;
+    		if(Select.booleanAdmin(name)==1){
+    			while(flag){
+    				if(cnt==0){
+    					String message="";
+    					message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name));
+    	    		sendout.println(message);
+    	    		cnt=1;
+    	        	
+    	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+    	    		System.out.println(message);
+    	        	}else if(cnt==1){
+    	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+    	        		if(Maccount.size()!=0){
+    	        		for(int i=0;i<Maccount.size();i++){
+    	        			String[] update;
+    	        			String tem;
+    	        			tem=Maccount.get(i);
+    	            		update=tem.split("g");
+    	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+    	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+    	        			
+    	        		}
+    	        		}
+    	        		InsertUpdateDelete.updateMaxCnt(name);
+    	        		System.out.println("最後の処理が終了しました");
+    	    		flag=false;
+    	    			}
+    	    	}
+    	    		flg=false;
+    	    	}else{
+    		while(flag){
+			if(cnt==0){
+				String message="";
+				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name));
+    		sendout.println(message);
+    		cnt=1;
+        	
+    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+    		System.out.println(message);
+        	}else if(cnt==1){
+        		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+        		if(IPcount.size()!=0){
+        		for(int i=0;i<IPcount.size();i++){
+        			String[] update;
+        			String tem;
+        			tem=IPcount.get(i);
+            		update=tem.split("g");
+        			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+        			
+        		}
+        		}
+        		InsertUpdateDelete.updateMaxCnt(name);
+        		System.out.println("最後の処理が終了しました");
+    		flag=false;
+    			}
+    	}
+    		flg=false;
+    	}
+    	
+    		
+    	}
+    	
+    	}
+  
+    	System.out.println("while処理を抜けました");
+    	
+    	
+    	}else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("PopUpButton"))){
+        	//ポップアップボタンが押されたら（グラフを更新してから、一番不正通信回数が多いやつ特定）
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+        	boolean flg=true;
+        	int Number=1;
+        	int Time=Integer.parseInt(Reader[4]);
+        	int length=Integer.parseInt(Reader[5]);
+        	while(flg){
+        		name=Reader[2];NowDate=Reader[3];
+            	ArrayList<String> blackIPaddress=new ArrayList<String>();
+        	
+        	if(Number==1){
+        	
+        	
+        	
+        	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+        		if(Select.booleanAdmin(Reader[2])==1){
+        			Number=2;
+        		}else{
+        	for(int j=6;j<length+6;j++){
+        		
+        		blackIPaddress.add(Reader[j]);
+        		
+        		if(Select.CheckIPaddress(name,Reader[j])!=1){
+        			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+        			}else{
+        				Number=2;
+        			}
+        	}
+        	Number=2;
+        		System.out.println("Number=1の処理成功");
+        	}
+        		
+        	}else if(Number==2){
+        	//ログファイルを差分だけインサートする処理
+        		
+        	for(int i=6+length;i<=Reader.length-1;i=i+4){
+        		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+        		
+        		  }
+        		
+        			  Number=3;
+        		System.out.println("Number=２の処理成功");
+        		  
+        			  
+        	}else if(Number==3){
+        	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+        	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+        	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+        	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+        		ArrayList<String> blackKeywords = new ArrayList<String>();
+        		blackKeywords=Select.SelectBlackKeywords(name);
+        		if(Select.booleanAdmin(name)==1){
+        			 for (int i=0;i<blackKeywords.size();i++) {
+        		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        		        	for(int j=0;j<IPaddress.size();j++){
+        		        		String[] update;
+        		        		String tem;
+        		        		tem=IPaddress.get(j).toString();
+        		        		
+        		        		update=tem.split("g");
+        		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		        		System.out.println(update[0]+update[1]);
+        		        		System.out.println(update[1]);
+        		        		
+        		        		
+        		        		boolean flagw=true;
+        		        		int cnt=0;
+        		        		while(flagw){
+        		        			if(cnt==0){
+        		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+        		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+        		        				cnt++;
+        		        			}else{
+        		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+        		        				flagw=false;
+        		        			}
+        		        		}
+        		        		
+        		        		
+        		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		        		
+        		        			
+        		        		}
+        		        	
+        		        	//}
+        		            
+        		        }
+        			
+        		}else{
+        		for (int i=0;i<blackKeywords.size();i++) {
+            	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+            	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+            	for(int j=0;j<IPaddress.size();j++){
+            		String[] update;
+            		String tem;
+            		tem=IPaddress.get(j).toString();
+            		
+            		update=tem.split("g");
+            		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+            		//ipアドレスごとにキーワードごと不正通信回数を更新
+            		System.out.println(update[0]+update[1]);
+            		System.out.println(update[1]);
+            		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+            		//temCnt=temCnt+Integer.parseInt(update[1]);
+            		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+            		
+            			
+            		}
+            	
+            	//}
+                
+            }
+        		}
+            Number=4;
+            System.out.println("Number=3の処理成功");
+        	}else if(Number==4){
+        		boolean flag=true;
+        		int cnt=0;
+        		if(Select.booleanAdmin(name)==1){
+        			while(flag){
+        				if(cnt==0){
+        					String message="";
+        					ArrayList<String> PopIPCount= new ArrayList<String>();
+    	    				PopIPCount=Select.ChooseMost(name,Time);
+    	    				if(PopIPCount.size()==0){
+    	    				message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+"[]";
+    	    				}else{
+    	    				
+            				String [] IP=(PopIPCount.get(0)).split(",");
+            				String Mac=Select.selectMac(name,IP[0]);
+            				
+    	    				message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+Mac+","+IP[1];
+    	        		
+    	    				}
+        					
+        	    		sendout.println(message);
+        	    		cnt=1;
+        	        	
+        	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	    		System.out.println(message);
+        	        	}else if(cnt==1){
+        	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+        	        		if(Maccount.size()!=0){
+        	        		for(int i=0;i<Maccount.size();i++){
+        	        			String[] update;
+        	        			String tem;
+        	        			tem=Maccount.get(i);
+        	            		update=tem.split("g");
+        	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+        	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+        	        			
+        	        		}
+        	        		}
+        	        		InsertUpdateDelete.updateMaxCnt(name);
+        	        		System.out.println("最後の処理が終了しました");
+        	    		flag=false;
+        	    			}
+        	    	}
+        	    		flg=false;
+        	    	}else{
+        	    		while(flag){
+        	    			if(cnt==0){
+        	    				String message="";
+        	    				//PopIPCountは５分間で通信が一番多いユーザーを格納
+        	    				ArrayList<String> PopIPCount= new ArrayList<String>();
+        	    				PopIPCount=Select.ChooseMost(name,Time);
+        	    				if(PopIPCount.size()==0){
+        	    				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+"[]";
+        	    				}else{
+        	    				
+        	    				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+PopIPCount.get(0);
+        	        		
+        	    				}
+        	    				sendout.println(message);
+        	        		cnt=1;
+        	            	
+        	        		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	        		System.out.println(message);
+        	            	}else if(cnt==1){
+        	            		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+        	            		if(IPcount.size()!=0){
+        	            		for(int i=0;i<IPcount.size();i++){
+        	            			String[] update;
+        	            			String tem;
+        	            			tem=IPcount.get(i);
+        	                		update=tem.split("g");
+        	            			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+        	            			
+        	            		}
+        	            		}
+        	            		InsertUpdateDelete.updateMaxCnt(name);
+        	            		System.out.println("最後の処理が終了しました");
+        	        		flag=false;
+        	        			}
+        	}
+        		flg=false;
+        	}
+        	
+        		
+        	}
+        	
+        	}
+      
+        	System.out.println("while処理を抜けました");
+        	
+        	
+        	
+        	
+        
+        	
+    		
+    	}else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("PercentButton"))){
+        	//不正通信割合（グラフを更新してから,不正通信割合をクライアントに提供）
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+    		boolean flg=true;
+        	int Number=1;
+        	int length=Integer.parseInt(Reader[5]);
+        	int AllorNow=Integer.parseInt(Reader[4]);
+        	while(flg){
+        		name=Reader[2];NowDate=Reader[3];
+            	ArrayList<String> blackIPaddress=new ArrayList<String>();
+        	
+        	if(Number==1){
+        	
+        	
+        	
+        	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+        		if(Select.booleanAdmin(Reader[2])==1){
+        			Number=2;
+        		}else{
+        	for(int j=6;j<length+6;j++){
+        		
+        		blackIPaddress.add(Reader[j]);
+        		
+        		if(Select.CheckIPaddress(name,Reader[j])!=1){
+        			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+        			}else{
+        				Number=2;
+        			}
+        	}
+        	Number=2;
+        		System.out.println("Number=1の処理成功");
+        	}
+        		
+        	}else if(Number==2){
+        	//ログファイルを差分だけインサートする処理
+        		
+        	for(int i=6+length;i<=Reader.length-1;i=i+4){
+        		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+        		
+        		  }
+        		
+        			  Number=3;
+        		System.out.println("Number=２の処理成功");
+        		  
+        			  
+        	}else if(Number==3){
+        	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+        	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+        	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+        	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+        		ArrayList<String> blackKeywords = new ArrayList<String>();
+        		blackKeywords=Select.SelectBlackKeywords(name);
+        		if(Select.booleanAdmin(name)==1){
+        			 for (int i=0;i<blackKeywords.size();i++) {
+        		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        		        	for(int j=0;j<IPaddress.size();j++){
+        		        		String[] update;
+        		        		String tem;
+        		        		tem=IPaddress.get(j).toString();
+        		        		
+        		        		update=tem.split("g");
+        		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		        		System.out.println(update[0]+update[1]);
+        		        		System.out.println(update[1]);
+        		        		
+        		        		
+        		        		boolean flagw=true;
+        		        		int cnt=0;
+        		        		while(flagw){
+        		        			if(cnt==0){
+        		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+        		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+        		        				cnt++;
+        		        			}else{
+        		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+        		        				flagw=false;
+        		        			}
+        		        		}
+        		        		
+        		        		
+        		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		        		
+        		        			
+        		        		}
+        		        	
+        		        	//}
+        		            
+        		        }
+        			
+        		}else{
+        		for (int i=0;i<blackKeywords.size();i++) {
+            	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+            	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+            	for(int j=0;j<IPaddress.size();j++){
+            		String[] update;
+            		String tem;
+            		tem=IPaddress.get(j).toString();
+            		
+            		update=tem.split("g");
+            		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+            		//ipアドレスごとにキーワードごと不正通信回数を更新
+            		System.out.println(update[0]+update[1]);
+            		System.out.println(update[1]);
+            		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+            		//temCnt=temCnt+Integer.parseInt(update[1]);
+            		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+            		
+            			
+            		}
+            	
+            	//}
+                
+            }
+        		}
+            Number=4;
+            System.out.println("Number=3の処理成功");
+        	}else if(Number==4){
+        		boolean flag=true;
+        		int cnt=0;
+        		if(Select.booleanAdmin(name)==1){
+        			while(flag){
+        				if(cnt==0){
+        					String message="";
+        					
+        					if(AllorNow==0){
+        						int allConnection=Select.percent(name);
+            					int blackConnection=Select.blackPercent(name);
+        					message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+        					}else{
+        						int allConnection=Select.percentNow(name);
+            					int blackConnection=Select.blackPercentNow(name);
+        						message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+        					}
+        					sendout.println(message);
+        	    		cnt=1;
+        	        	
+        	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	    		System.out.println(message);
+        	        	}else if(cnt==1){
+        	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+        	        		if(Maccount.size()!=0){
+        	        		for(int i=0;i<Maccount.size();i++){
+        	        			String[] update;
+        	        			String tem;
+        	        			tem=Maccount.get(i);
+        	            		update=tem.split("g");
+        	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+        	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+        	        			
+        	        		}
+        	        		}
+        	        		InsertUpdateDelete.updateMaxCnt(name);
+        	        		System.out.println("最後の処理が終了しました");
+        	    		flag=false;
+        	    			}
+        	    	}
+        	    		flg=false;
+        	    	}else{
+        		while(flag){
+    			if(cnt==0){
+    				String message="";
+    				if(AllorNow==1){
+    				int allConnection=Select.percent(name);
+					int blackConnection=Select.blackPercent(name);
+    				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+    				}else{
+    					int allConnection=Select.percentNow(name);
+    					int blackConnection=Select.blackPercentNow(name);
+        				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+    				}
+        		sendout.println(message);
+        		cnt=1;
+            	
+        		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        		System.out.println(message);
+            	}else if(cnt==1){
+            		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+            		if(IPcount.size()!=0){
+            		for(int i=0;i<IPcount.size();i++){
+            			String[] update;
+            			String tem;
+            			tem=IPcount.get(i);
+                		update=tem.split("g");
+            			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+            			
+            		}
+            		}
+            		InsertUpdateDelete.updateMaxCnt(name);
+            		System.out.println("最後の処理が終了しました");
+        		flag=false;
+        			}
+        	}
+        		flg=false;
+        	}
+        	
+        		
+        	}
+        	
+        	}
+      
+        	System.out.println("while処理を抜けました");
+        	
+        	
+    		
+    	}else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("RenewalBlackButton"))){
+    		//blacklistごと棒グラフ
+           	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	
+        	boolean flg=true;
+        	int Number=1;
+        	int length=Integer.parseInt(Reader[4]);
+        	while(flg){
+        		name=Reader[2];NowDate=Reader[3];
+            	ArrayList<String> blackIPaddress=new ArrayList<String>();
+        	
+        	if(Number==1){
+        	
+        	
+        	
+        	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+        		if(Select.booleanAdmin(Reader[2])==1){
+        			Number=2;
+        		}else{
+        	for(int j=5;j<length+5;j++){
+        		
+        		blackIPaddress.add(Reader[j]);
+        		
+        		if(Select.CheckIPaddress(name,Reader[j])!=1){
+        			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+        			}else{
+        				Number=2;
+        			}
+        	}
+        	Number=2;
+        		System.out.println("Number=1の処理成功");
+        	}
+        		
+        	}else if(Number==2){
+        	//ログファイルを差分だけインサートする処理
+        		
+        	for(int i=5+length;i<=Reader.length-1;i=i+4){
+        		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+        		
+        		  }
+        		
+        			  Number=3;
+        		System.out.println("Number=２の処理成功");
+        		  
+        			  
+        	}else if(Number==3){
+        	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+        	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+        	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+        	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+        		ArrayList<String> blackKeywords = new ArrayList<String>();
+        		blackKeywords=Select.SelectBlackKeywords(name);
+        		if(Select.booleanAdmin(name)==1){
+        			 for (int i=0;i<blackKeywords.size();i++) {
+        		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        		        	for(int j=0;j<IPaddress.size();j++){
+        		        		String[] update;
+        		        		String tem;
+        		        		tem=IPaddress.get(j).toString();
+        		        		
+        		        		update=tem.split("g");
+        		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		        		System.out.println(update[0]+update[1]);
+        		        		System.out.println(update[1]);
+        		        		
+        		        		
+        		        		boolean flagw=true;
+        		        		int cnt=0;
+        		        		while(flagw){
+        		        			if(cnt==0){
+        		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+        		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+        		        				cnt++;
+        		        			}else{
+        		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+        		        				flagw=false;
+        		        			}
+        		        		}
+        		        		
+        		        		
+        		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		        		InsertUpdateDelete.TEMBlackUpdate(Integer.parseInt(update[1]), name, blackKeywords.get(i).toString());
+        		        			
+        		        		}
+        		        	
+        		        	//}
+        		            
+        		        }
+        			
+        		}else{
+        		for (int i=0;i<blackKeywords.size();i++) {
+            	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+            	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+            	for(int j=0;j<IPaddress.size();j++){
+            		String[] update;
+            		String tem;
+            		tem=IPaddress.get(j).toString();
+            		
+            		update=tem.split("g");
+            		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+            		//ipアドレスごとにキーワードごと不正通信回数を更新
+            		System.out.println(update[0]+update[1]);
+            		System.out.println(update[1]);
+            		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+            		//temCnt=temCnt+Integer.parseInt(update[1]);
+            		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+            		InsertUpdateDelete.TEMBlackUpdate(Integer.parseInt(update[1]), name, blackKeywords.get(i).toString());
+            		
+            			
+            		}
+            	
+            	//}
+                
+            }
+        		}
+            Number=4;
+            System.out.println("Number=3の処理成功");
+        	}else if(Number==4){
+        		boolean flag=true;
+        		int cnt=0;
+        		if(Select.booleanAdmin(name)==1){
+        			while(flag){
+        				if(cnt==0){
+        					String message="";
+        					message=Select.ByblackListSabun(name)+"?"+Integer.toString(Select.MaxSelect(name));
+        	    		sendout.println(message);
+        	    		cnt=1;
+        	        	
+        	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	    		System.out.println(message);
+        	        	}else if(cnt==1){
+        	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+        	        		if(Maccount.size()!=0){
+        	        		for(int i=0;i<Maccount.size();i++){
+        	        			String[] update;
+        	        			String tem;
+        	        			tem=Maccount.get(i);
+        	            		update=tem.split("g");
+        	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+        	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+        	        			
+        	        		}
+        	        		}
+        	        		InsertUpdateDelete.TEMBlackUpdatelast(name);
+        	        		InsertUpdateDelete.updateMaxCnt(name);
+        	        		System.out.println("最後の処理が終了しました");
+        	    		flag=false;
+        	    			}
+        	    	}
+        	    		flg=false;
+        	    	}else{
+        		while(flag){
+    			if(cnt==0){
+    				String message="";
+    				message=Select.ByblackListSabun(name)+"?"+Integer.toString(Select.MaxSelect(name));
+        		sendout.println(message);
+        		cnt=1;
+            	
+        		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        		System.out.println(message);
+            	}else if(cnt==1){
+            		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+            		if(IPcount.size()!=0){
+            		for(int i=0;i<IPcount.size();i++){
+            			String[] update;
+            			String tem;
+            			tem=IPcount.get(i);
+                		update=tem.split("g");
+            			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+            			
+            		}
+            		}
+            		InsertUpdateDelete.TEMBlackUpdatelast(name);
+            		InsertUpdateDelete.updateMaxCnt(name);
+            		System.out.println("最後の処理が終了しました");
+        		flag=false;
+        			}
+        	}
+        		flg=false;
+        	}
+        	
+        		
+        	}
+        	
+        	}
+      
+        	System.out.println("while処理を抜けました");
+        	
+    	}else if(Reader[0].equals("Exe")){
+    	sendout.println( soc.getInetAddress());
+    	}else if((Reader[0].equals("Graph"))&&(Reader[1].equals("leaseUpButton"))){
+    		//リースファイル更新ボタンが押されたら
+    		//リースファイルをインサートしてアップデートする。
+    		name=Reader[2];
+    		int cnt=0;
+    		if(Reader.length>3){
+    		for(int i=3;i<Reader.length-1;i+=3){
+    			InsertUpdateDelete.insertlease(Reader[i+1],Reader[i+2],Reader[i],name);
+    			cnt++;
+    			boolean flag=true;
+        		int count=0;
+        		while(flag){
+        			if(count==0){
+        				InsertUpdateDelete.updateLeaseMax(name,cnt);
+        				count++;
+        			}else{
+        		sendout.println(Select.leaceMaxCnt(name));
+        		flag=false;
+        			}
+        		}
+        		
+    		}
+    		}else{
+    		
+    			
+    		sendout.println(Select.leaceMaxCnt(name));
+    			
+    		}
+    	
+    	}else{sendout.println("unnko");
+    	sendout.println("reizi");
+    }
+	  
+  }
+    
+  catch(Exception ioex){
+    ioex.printStackTrace();
+  }
+  finally{
+    if(soc != null){
+        try {
+			soc.close();
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+      }
+  }
+}
+}
+
+
+
+
+
+
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+//複数接続Socket通信サンプルプログラム(サーバー)
+//クライアントからの接続を待ち、接続が行なわれたら
+//1行のデータを受け取り、コンソールに表示して接続を切断する。
+//複数のクライアントとの通信をスレッドにより行なう。
+//プログラム終了は，コマンドプロンプトでCTRL-C
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+
+public class ServerMain  
+{
+	
+public static void main(String[] args){
+    ServerSocket serverSoc = null;
+    
+    try {
+      // ポート番号は、30000
+      //ソケットを作成
+      serverSoc = new ServerSocket(30008);
+      boolean flag=true;
+
+      //クライアントからの接続を待機するaccept()メソッド。
+      //accept()は、接続があるまで処理はブロックされる。
+      //もし、複数のクライアントからの接続を受け付けるようにするには
+      //スレッドを使う。
+      //accept()は接続時に新たなsocketを返す。これを使って通信を行なう。
+      System.out.println("接続待ち ");
+      while(flag){
+        Socket socket=null;
+        socket = serverSoc.accept();
+        //accept()は、クライアントからの接続要求があるまでブロックする。
+        //接続があれば次の命令に移る。
+        //スレッドを起動し、クライアントと通信する。
+        new SrvThread(socket).start();
+       
+        System.out.println("新しい接続");
+      }
+    }
+    catch (IOException e) {
+      System.out.println("IOException!");
+      e.printStackTrace();
+    }
+    finally{
+      try{
+        if (serverSoc != null){
+          serverSoc.close();
+        }
+      }
+      catch (IOException ioex) {
+        ioex.printStackTrace();
+      }
+    }
+ }
+}
+
+class SrvThread extends Thread{
+private Socket soc;
+
+public SrvThread(Socket sct){
+  soc=sct;
+  System.out.println("Thread is Generated.  Connect to " +
+      soc.getInetAddress());
+
+}
+
+public void run(){
+	
+  try{
+	
+	  String name;String password;
+	 //socketからのデータはInputStreamReaderに送り、さらに
+    //BufferedReaderによってバッファリングする。
+    BufferedReader reader = new BufferedReader
+      (new InputStreamReader(soc.getInputStream()));
+    //Clientへの出力用PrintWriter
+    PrintWriter sendout = new PrintWriter(soc.getOutputStream(), true);
+    //データ読み取りと表示。
+    String line;
+    String NowDate;
+    int MaxCount = 0;
+    
+    line = reader.readLine();
+   
+    line=line.replace(" ", "");
+    line=line.replace("[","");
+    line=line.replace("]","");
+    System.out.println(line);
+   
+    String[] Reader=line.split(",");
+    //InsertUpdateDelete.execCommandReturn(line,"C:\\test\\test2.txt");
+ 
+    System.out.println(Reader[0]);
+    System.out.println(Reader[1]);
+
+    
+    
+    
+    
+    //ログイン処理
+    if((Reader[0].equals("loginMenu"))&&(Reader[1].equals("loginButton"))){
+    	
+    	name=Reader[2];password=Reader[3];
+    	//ログインできるならクライアントに1を返して、できないなら0を返す。
+    	String[] AdminArray=Select.loginSelect(name, password).split(",");
+    	System.out.println(AdminArray[0]);
+    	System.out.println(AdminArray[1]);
+    	if(AdminArray[1].equals("1")){
+    		if(Select.leaceA(name)==0){
+    			sendout.println(Select.loginSelect(name, password));
+    		}else{
+    			sendout.println(Select.loginSelect(name, password)+","+Select.leaceMaxCnt(name)+","+Select.selectURL(name));
+    			System.out.println(Select.loginSelect(name, password)+","+Select.leaceMaxCnt(name));
+    		}
+    	}else{
+    	sendout.println(Select.loginSelect(name, password));
+    	}
+    	
+    }else if((Reader[0].equals("sign_up"))&&(Reader[1].equals("Subscribe"))){
+    	/////////////////////////////////////////////////////////////////////////////////////////////////ユーザー登録処理
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	int result;
+    	String ipAddress;
+    	ipAddress=soc.getInetAddress().toString();
+    	ipAddress=ipAddress.replace("/","");
+    	result=InsertUpdateDelete.insertUserAccount(Reader[3],Reader[5],Reader[2],Reader[4],ipAddress,Reader[6],Reader[7]);
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"apple");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"google");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"gamewith");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"youtube");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"yahoo");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"game");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"ero");
+    	InsertUpdateDelete.insertBlacklist(Reader[3],"poruno");
+    	sendout.println(result+","+ soc.getInetAddress());
+    	if(Reader[6].equals("1")){
+    		int cnt =0;
+    		if(Reader.length>8){
+    		for(int i=8;i<Reader.length-1;i+=3){
+    			InsertUpdateDelete.insertlease(Reader[i+1],Reader[i+2],Reader[i],Reader[3]);
+    			cnt++;
+    		}
+    		System.out.println(cnt);
+    		InsertUpdateDelete.updateLeaseMax(Reader[3],cnt);
+    		}
+    	}
+    	if(result==1){
+    		System.out.println("ユーザ"+Reader[3]+"を登録しました");
+    	}else{
+    		System.out.println("ユーザー"+Reader[3]+"は登録できません");
+    	}
+    }else if((Reader[0].equals("profile"))&&(Reader[1].equals("Subscribe"))){
+    	//ログイン後のユーザー情報変更処理
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	if(Select.booleanAdmin(Reader[3])==0){
+    	int result;
+    	String ipAddress=soc.getInetAddress().toString();
+    	ipAddress=ipAddress.replace("/","");
+    	result=InsertUpdateDelete.accountUpdate(Reader[3],Reader[5],Reader[2],Reader[4],ipAddress,"",0);
+    	sendout.println(result);
+    	if(result==1){
+    		System.out.println("ユーザ"+Reader[3]+"のプロフィールを更新しました");
+    	}else{
+    		System.out.println("ユーザー"+Reader[3]+"更新できません");
+    	}
+    	}else{
+    		int result;
+        	String ipAddress=soc.getInetAddress().toString();
+        	ipAddress=ipAddress.replace("/","");
+        	result=InsertUpdateDelete.accountUpdate(Reader[3],Reader[5],Reader[2],Reader[4],ipAddress,Reader[7],Integer.parseInt(Reader[6]));
+        	sendout.println(result);
+        	if(result==1){
+        		System.out.println("ユーザ"+Reader[3]+"のプロフィールを更新しました");
+        	}else{
+        		System.out.println("ユーザー"+Reader[3]+"更新できません");
+        	}
+    	}
+    }
+     else if(Reader[0].equals("graphToProfile")){
+    	 //プロフィール変更画面
+     	//
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+    		sendout.println(Select.accountSelect("select name_pi,mailadd,name_id,Password from account_tbl where name_id='"+Reader[1]+"'")+","+ soc.getInetAddress());
+    		
+     }else if(Reader[0].equals("graphToBlacklist")){
+     	//ブラックリスト行ったとき
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	 sendout.println(Select.SelectProfileBlackList("select BlackKeywords from blacklist_tbl where name_id='"+Reader[1]+"'"));
+     }else if((Reader[0].equals("graphInBlacklist"))&&(Reader[1].equals("insertButton"))){
+     	//インサート処理
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+     	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	 //重複行をここで排除しようとしたが、意味がなかった。
+    	 //if(Select.Selecttilyouhuku(Reader[2],Reader[3])==1){
+         	//sendout.println(0);
+        // }else{
+    	 sendout.println(InsertUpdateDelete.InsertBlacklist(Reader[3],Reader[2]));
+    	 System.out.println(InsertUpdateDelete.InsertBlacklist(Reader[3],Reader[2]));
+        // }
+    }else if((Reader[0].equals("graphInBlacklist"))&&(Reader[1].equals("deleteButton"))){
+    	//ブラックリストデリート処理
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	sendout.println(InsertUpdateDelete. DeleteBlacklist(Reader[3],Reader[2]));
+    	
+    }else if((Reader[0].equals("MenuToGraph"))&&(Reader[1].equals("GoGraphButton"))&&(Reader[2].equals("0"))){
+    	//グラフ画面へ移行したときの処理（全て）
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	NowDate=Reader[4];
+    	
+    	System.out.println(Reader[4]);
+        System.out.println(Reader[3]);
+        //管理者権限アリなら
+    	if(Select.booleanAdmin(Reader[3])==1){
+    		if(Select.connectionSelectMac(Reader[3]).size()==0){
+        		sendout.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        		System.out.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        		}else{
+        	sendout.println(Select.connectionSelectMac(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        	System.out.println("b");
+        	System.out.println(Select.connectionSelectMac(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+        	}
+    		
+    	}else{
+    	if(Select.connectionSelect(Reader[3]).size()==0){
+    		sendout.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    		System.out.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    		}else{
+    	sendout.println(Select.connectionSelect(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	System.out.println("b");
+    	System.out.println(Select.connectionSelect(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	}
+    	}
+    	System.out.println("正常にグラフ作成のためのデータをクライアントに受け渡しました。");
+    }else if((Reader[0].equals("MenuToGraph"))&&(Reader[1].equals("GoGraphButton"))&&(Reader[2].equals("1"))){
+    	//グラフ画面に移行したときの処理（今から）
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	NowDate=Reader[4];
+    	sendout.println("nodata"+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	InsertUpdateDelete.updateNowState(Reader[3]);
+    	System.out.println("正常にグラフ作成のためのデータをクライアントに受け渡しました。");
+    }else if((Reader[0].equals("MenuToGraph"))&&(Reader[1].equals("GoGraphButton"))&&(Reader[2].equals("2"))){
+    	//グラフ画面へ移行したときの処理（ブラックリストごとの）
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	NowDate=Reader[4];
+    	
+    	System.out.println(Reader[4]);
+        System.out.println(Reader[3]);
+      
+    
+    		
+    	sendout.println(Select.ByblackList(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	System.out.println("b");
+    	System.out.println(Select.connectionSelect(Reader[3])+"|"+Integer.toString(Select.MaxSelect(Reader[3])));
+    	
+    	
+    	System.out.println("正常にグラフ作成のためのデータをクライアントに受け渡しました。");
+    }else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("RenewalButton"))){
+    	//グラフの更新ボタンが押されたら。
+       	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	/////////////////////////////////////////////////////////////////////////////////////////////////
+    	
+    	boolean flg=true;
+    	int Number=1;
+    	int length=Integer.parseInt(Reader[4]);
+    	while(flg){
+    		name=Reader[2];NowDate=Reader[3];
+        	ArrayList<String> blackIPaddress=new ArrayList<String>();
+    	
+    	if(Number==1){
+    	
+    	
+    	
+    	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+    		if(Select.booleanAdmin(Reader[2])==1){
+    			Number=2;
+    		}else{
+    	for(int j=5;j<length+5;j++){
+    		
+    		blackIPaddress.add(Reader[j]);
+    		
+    		if(Select.CheckIPaddress(name,Reader[j])!=1){
+    			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+    			}else{
+    				Number=2;
+    			}
+    	}
+    	Number=2;
+    		System.out.println("Number=1の処理成功");
+    	}
+    		
+    	}else if(Number==2){
+    	//ログファイルを差分だけインサートする処理
+    		
+    	for(int i=5+length;i<=Reader.length-1;i=i+4){
+    		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+    		
+    		  }
+    		
+    			  Number=3;
+    		System.out.println("Number=２の処理成功");
+    		  
+    			  
+    	}else if(Number==3){
+    	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+    	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+    	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+    	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+    		ArrayList<String> blackKeywords = new ArrayList<String>();
+    		blackKeywords=Select.SelectBlackKeywords(name);
+    		if(Select.booleanAdmin(name)==1){
+    			 for (int i=0;i<blackKeywords.size();i++) {
+    		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+    		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+    		        	for(int j=0;j<IPaddress.size();j++){
+    		        		String[] update;
+    		        		String tem;
+    		        		tem=IPaddress.get(j).toString();
+    		        		
+    		        		update=tem.split("g");
+    		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+    		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+    		        		System.out.println(update[0]+update[1]);
+    		        		System.out.println(update[1]);
+    		        		
+    		        		
+    		        		boolean flagw=true;
+    		        		int cnt=0;
+    		        		while(flagw){
+    		        			if(cnt==0){
+    		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+    		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+    		        				cnt++;
+    		        			}else{
+    		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+    		        				flagw=false;
+    		        			}
+    		        		}
+    		        		
+    		        		
+    		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+    		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+    		        		
+    		        			
+    		        		}
+    		        	
+    		        	//}
+    		            
+    		        }
+    			
+    		}else{
+    		for (int i=0;i<blackKeywords.size();i++) {
+        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        	for(int j=0;j<IPaddress.size();j++){
+        		String[] update;
+        		String tem;
+        		tem=IPaddress.get(j).toString();
+        		
+        		update=tem.split("g");
+        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		System.out.println(update[0]+update[1]);
+        		System.out.println(update[1]);
+        		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		
+        			
+        		}
+        	
+        	//}
+            
+        }
+    		}
+        Number=4;
+        System.out.println("Number=3の処理成功");
+    	}else if(Number==4){
+    		boolean flag=true;
+    		int cnt=0;
+    		if(Select.booleanAdmin(name)==1){
+    			while(flag){
+    				if(cnt==0){
+    					String message="";
+    					message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name));
+    	    		sendout.println(message);
+    	    		cnt=1;
+    	        	
+    	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+    	    		System.out.println(message);
+    	        	}else if(cnt==1){
+    	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+    	        		if(Maccount.size()!=0){
+    	        		for(int i=0;i<Maccount.size();i++){
+    	        			String[] update;
+    	        			String tem;
+    	        			tem=Maccount.get(i);
+    	            		update=tem.split("g");
+    	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+    	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+    	        			
+    	        		}
+    	        		}
+    	        		InsertUpdateDelete.updateMaxCnt(name);
+    	        		System.out.println("最後の処理が終了しました");
+    	    		flag=false;
+    	    			}
+    	    	}
+    	    		flg=false;
+    	    	}else{
+    		while(flag){
+			if(cnt==0){
+				String message="";
+				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name));
+    		sendout.println(message);
+    		cnt=1;
+        	
+    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+    		System.out.println(message);
+        	}else if(cnt==1){
+        		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+        		if(IPcount.size()!=0){
+        		for(int i=0;i<IPcount.size();i++){
+        			String[] update;
+        			String tem;
+        			tem=IPcount.get(i);
+            		update=tem.split("g");
+        			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+        			
+        		}
+        		}
+        		InsertUpdateDelete.updateMaxCnt(name);
+        		System.out.println("最後の処理が終了しました");
+    		flag=false;
+    			}
+    	}
+    		flg=false;
+    	}
+    	
+    		
+    	}
+    	
+    	}
+  
+    	System.out.println("while処理を抜けました");
+    	
+    	
+    	}else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("PopUpButton"))){
+        	//ポップアップボタンが押されたら（グラフを更新してから、一番不正通信回数が多いやつ特定）
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+        	boolean flg=true;
+        	int Number=1;
+        	int Time=Integer.parseInt(Reader[4]);
+        	int length=Integer.parseInt(Reader[5]);
+        	while(flg){
+        		name=Reader[2];NowDate=Reader[3];
+            	ArrayList<String> blackIPaddress=new ArrayList<String>();
+        	
+        	if(Number==1){
+        	
+        	
+        	
+        	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+        		if(Select.booleanAdmin(Reader[2])==1){
+        			Number=2;
+        		}else{
+        	for(int j=6;j<length+6;j++){
+        		
+        		blackIPaddress.add(Reader[j]);
+        		
+        		if(Select.CheckIPaddress(name,Reader[j])!=1){
+        			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+        			}else{
+        				Number=2;
+        			}
+        	}
+        	Number=2;
+        		System.out.println("Number=1の処理成功");
+        	}
+        		
+        	}else if(Number==2){
+        	//ログファイルを差分だけインサートする処理
+        		
+        	for(int i=6+length;i<=Reader.length-1;i=i+4){
+        		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+        		
+        		  }
+        		
+        			  Number=3;
+        		System.out.println("Number=２の処理成功");
+        		  
+        			  
+        	}else if(Number==3){
+        	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+        	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+        	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+        	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+        		ArrayList<String> blackKeywords = new ArrayList<String>();
+        		blackKeywords=Select.SelectBlackKeywords(name);
+        		if(Select.booleanAdmin(name)==1){
+        			 for (int i=0;i<blackKeywords.size();i++) {
+        		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        		        	for(int j=0;j<IPaddress.size();j++){
+        		        		String[] update;
+        		        		String tem;
+        		        		tem=IPaddress.get(j).toString();
+        		        		
+        		        		update=tem.split("g");
+        		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		        		System.out.println(update[0]+update[1]);
+        		        		System.out.println(update[1]);
+        		        		
+        		        		
+        		        		boolean flagw=true;
+        		        		int cnt=0;
+        		        		while(flagw){
+        		        			if(cnt==0){
+        		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+        		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+        		        				cnt++;
+        		        			}else{
+        		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+        		        				flagw=false;
+        		        			}
+        		        		}
+        		        		
+        		        		
+        		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		        		
+        		        			
+        		        		}
+        		        	
+        		        	//}
+        		            
+        		        }
+        			
+        		}else{
+        		for (int i=0;i<blackKeywords.size();i++) {
+            	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+            	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+            	for(int j=0;j<IPaddress.size();j++){
+            		String[] update;
+            		String tem;
+            		tem=IPaddress.get(j).toString();
+            		
+            		update=tem.split("g");
+            		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+            		//ipアドレスごとにキーワードごと不正通信回数を更新
+            		System.out.println(update[0]+update[1]);
+            		System.out.println(update[1]);
+            		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+            		//temCnt=temCnt+Integer.parseInt(update[1]);
+            		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+            		
+            			
+            		}
+            	
+            	//}
+                
+            }
+        		}
+            Number=4;
+            System.out.println("Number=3の処理成功");
+        	}else if(Number==4){
+        		boolean flag=true;
+        		int cnt=0;
+        		if(Select.booleanAdmin(name)==1){
+        			while(flag){
+        				if(cnt==0){
+        					String message="";
+        					ArrayList<String> PopIPCount= new ArrayList<String>();
+    	    				PopIPCount=Select.ChooseMost(name,Time);
+    	    				if(PopIPCount.size()==0){
+    	    				message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+"[]";
+    	    				}else{
+    	    				
+            				String [] IP=(PopIPCount.get(0)).split(",");
+            				String Mac=Select.selectMac(name,IP[0]);
+            				
+    	    				message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+Mac+","+IP[1];
+    	        		
+    	    				}
+        					
+        	    		sendout.println(message);
+        	    		cnt=1;
+        	        	
+        	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	    		System.out.println(message);
+        	        	}else if(cnt==1){
+        	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+        	        		if(Maccount.size()!=0){
+        	        		for(int i=0;i<Maccount.size();i++){
+        	        			String[] update;
+        	        			String tem;
+        	        			tem=Maccount.get(i);
+        	            		update=tem.split("g");
+        	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+        	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+        	        			
+        	        		}
+        	        		}
+        	        		InsertUpdateDelete.updateMaxCnt(name);
+        	        		System.out.println("最後の処理が終了しました");
+        	    		flag=false;
+        	    			}
+        	    	}
+        	    		flg=false;
+        	    	}else{
+        	    		while(flag){
+        	    			if(cnt==0){
+        	    				String message="";
+        	    				//PopIPCountは５分間で通信が一番多いユーザーを格納
+        	    				ArrayList<String> PopIPCount= new ArrayList<String>();
+        	    				PopIPCount=Select.ChooseMost(name,Time);
+        	    				if(PopIPCount.size()==0){
+        	    				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+"[]";
+        	    				}else{
+        	    				
+        	    				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"*"+PopIPCount.get(0);
+        	        		
+        	    				}
+        	    				sendout.println(message);
+        	        		cnt=1;
+        	            	
+        	        		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	        		System.out.println(message);
+        	            	}else if(cnt==1){
+        	            		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+        	            		if(IPcount.size()!=0){
+        	            		for(int i=0;i<IPcount.size();i++){
+        	            			String[] update;
+        	            			String tem;
+        	            			tem=IPcount.get(i);
+        	                		update=tem.split("g");
+        	            			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+        	            			
+        	            		}
+        	            		}
+        	            		InsertUpdateDelete.updateMaxCnt(name);
+        	            		System.out.println("最後の処理が終了しました");
+        	        		flag=false;
+        	        			}
+        	}
+        		flg=false;
+        	}
+        	
+        		
+        	}
+        	
+        	}
+      
+        	System.out.println("while処理を抜けました");
+        	
+        	
+        	
+        	
+        
+        	
+    		
+    	}else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("PercentButton"))){
+        	//不正通信割合（グラフを更新してから,不正通信割合をクライアントに提供）
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+    		boolean flg=true;
+        	int Number=1;
+        	int length=Integer.parseInt(Reader[5]);
+        	int AllorNow=Integer.parseInt(Reader[4]);
+        	while(flg){
+        		name=Reader[2];NowDate=Reader[3];
+            	ArrayList<String> blackIPaddress=new ArrayList<String>();
+        	
+        	if(Number==1){
+        	
+        	
+        	
+        	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+        		if(Select.booleanAdmin(Reader[2])==1){
+        			Number=2;
+        		}else{
+        	for(int j=6;j<length+6;j++){
+        		
+        		blackIPaddress.add(Reader[j]);
+        		
+        		if(Select.CheckIPaddress(name,Reader[j])!=1){
+        			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+        			}else{
+        				Number=2;
+        			}
+        	}
+        	Number=2;
+        		System.out.println("Number=1の処理成功");
+        	}
+        		
+        	}else if(Number==2){
+        	//ログファイルを差分だけインサートする処理
+        		
+        	for(int i=6+length;i<=Reader.length-1;i=i+4){
+        		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+        		
+        		  }
+        		
+        			  Number=3;
+        		System.out.println("Number=２の処理成功");
+        		  
+        			  
+        	}else if(Number==3){
+        	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+        	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+        	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+        	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+        		ArrayList<String> blackKeywords = new ArrayList<String>();
+        		blackKeywords=Select.SelectBlackKeywords(name);
+        		if(Select.booleanAdmin(name)==1){
+        			 for (int i=0;i<blackKeywords.size();i++) {
+        		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        		        	for(int j=0;j<IPaddress.size();j++){
+        		        		String[] update;
+        		        		String tem;
+        		        		tem=IPaddress.get(j).toString();
+        		        		
+        		        		update=tem.split("g");
+        		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		        		System.out.println(update[0]+update[1]);
+        		        		System.out.println(update[1]);
+        		        		
+        		        		
+        		        		boolean flagw=true;
+        		        		int cnt=0;
+        		        		while(flagw){
+        		        			if(cnt==0){
+        		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+        		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+        		        				cnt++;
+        		        			}else{
+        		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+        		        				flagw=false;
+        		        			}
+        		        		}
+        		        		
+        		        		
+        		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		        		
+        		        			
+        		        		}
+        		        	
+        		        	//}
+        		            
+        		        }
+        			
+        		}else{
+        		for (int i=0;i<blackKeywords.size();i++) {
+            	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+            	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+            	for(int j=0;j<IPaddress.size();j++){
+            		String[] update;
+            		String tem;
+            		tem=IPaddress.get(j).toString();
+            		
+            		update=tem.split("g");
+            		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+            		//ipアドレスごとにキーワードごと不正通信回数を更新
+            		System.out.println(update[0]+update[1]);
+            		System.out.println(update[1]);
+            		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+            		//temCnt=temCnt+Integer.parseInt(update[1]);
+            		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+            		
+            			
+            		}
+            	
+            	//}
+                
+            }
+        		}
+            Number=4;
+            System.out.println("Number=3の処理成功");
+        	}else if(Number==4){
+        		boolean flag=true;
+        		int cnt=0;
+        		if(Select.booleanAdmin(name)==1){
+        			while(flag){
+        				if(cnt==0){
+        					String message="";
+        					
+        					if(AllorNow==0){
+        						int allConnection=Select.percent(name);
+            					int blackConnection=Select.blackPercent(name);
+        					message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+        					}else{
+        						int allConnection=Select.percentNow(name);
+            					int blackConnection=Select.blackPercentNow(name);
+        						message=Select.connectionSelectSabunMac(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+        					}
+        					sendout.println(message);
+        	    		cnt=1;
+        	        	
+        	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	    		System.out.println(message);
+        	        	}else if(cnt==1){
+        	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+        	        		if(Maccount.size()!=0){
+        	        		for(int i=0;i<Maccount.size();i++){
+        	        			String[] update;
+        	        			String tem;
+        	        			tem=Maccount.get(i);
+        	            		update=tem.split("g");
+        	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+        	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+        	        			
+        	        		}
+        	        		}
+        	        		InsertUpdateDelete.updateMaxCnt(name);
+        	        		System.out.println("最後の処理が終了しました");
+        	    		flag=false;
+        	    			}
+        	    	}
+        	    		flg=false;
+        	    	}else{
+        		while(flag){
+    			if(cnt==0){
+    				String message="";
+    				if(AllorNow==1){
+    				int allConnection=Select.percent(name);
+					int blackConnection=Select.blackPercent(name);
+    				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+    				}else{
+    					int allConnection=Select.percentNow(name);
+    					int blackConnection=Select.blackPercentNow(name);
+        				message=Select.connectionSelectSabun(name)+"|"+Integer.toString(Select.MaxSelect(name))+"|"+blackConnection+","+allConnection;
+    				}
+        		sendout.println(message);
+        		cnt=1;
+            	
+        		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        		System.out.println(message);
+            	}else if(cnt==1){
+            		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+            		if(IPcount.size()!=0){
+            		for(int i=0;i<IPcount.size();i++){
+            			String[] update;
+            			String tem;
+            			tem=IPcount.get(i);
+                		update=tem.split("g");
+            			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+            			
+            		}
+            		}
+            		InsertUpdateDelete.updateMaxCnt(name);
+            		System.out.println("最後の処理が終了しました");
+        		flag=false;
+        			}
+        	}
+        		flg=false;
+        	}
+        	
+        		
+        	}
+        	
+        	}
+      
+        	System.out.println("while処理を抜けました");
+        	
+        	
+    		
+    	}else if((Reader[0].equals("RenewalGraph"))&&(Reader[1].equals("RenewalBlackButton"))){
+    		//blacklistごと棒グラフ
+           	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	/////////////////////////////////////////////////////////////////////////////////////////////////
+        	
+        	boolean flg=true;
+        	int Number=1;
+        	int length=Integer.parseInt(Reader[4]);
+        	while(flg){
+        		name=Reader[2];NowDate=Reader[3];
+            	ArrayList<String> blackIPaddress=new ArrayList<String>();
+        	
+        	if(Number==1){
+        	
+        	
+        	
+        	//ipアドレスがテーブルに存在していたら、インサートしない、していなかったらインサートする。
+        		if(Select.booleanAdmin(Reader[2])==1){
+        			Number=2;
+        		}else{
+        	for(int j=5;j<length+5;j++){
+        		
+        		blackIPaddress.add(Reader[j]);
+        		
+        		if(Select.CheckIPaddress(name,Reader[j])!=1){
+        			Number=InsertUpdateDelete.insertIPaddress(Reader[j],name);
+        			}else{
+        				Number=2;
+        			}
+        	}
+        	Number=2;
+        		System.out.println("Number=1の処理成功");
+        	}
+        		
+        	}else if(Number==2){
+        	//ログファイルを差分だけインサートする処理
+        		
+        	for(int i=5+length;i<=Reader.length-1;i=i+4){
+        		Number=InsertUpdateDelete.insertSquidlog(Integer.parseInt(Reader[i]),Reader[i+1],Reader[i+2],Reader[i+3],name);
+        		
+        		  }
+        		
+        			  Number=3;
+        		System.out.println("Number=２の処理成功");
+        		  
+        			  
+        	}else if(Number==3){
+        	//ブラックリストをそれぞれ配列に格納、ブラックリストごとにipアドレスごとの不正通信回数を調べ
+        	//ipアドレスと不正通信回数をさらに別の配列に格納し、ipccnテーブルを更新
+        	//Iterator<String> it = Select.SelectBlackKeywords(name).iterator();
+        	//InsertUpdateDelete.execCommandReturn(Select.SelectBlackKeywords(name).toString(),"C:\\test\\test2.txt");
+        		ArrayList<String> blackKeywords = new ArrayList<String>();
+        		blackKeywords=Select.SelectBlackKeywords(name);
+        		if(Select.booleanAdmin(name)==1){
+        			 for (int i=0;i<blackKeywords.size();i++) {
+        		        	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+        		        	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+        		        	for(int j=0;j<IPaddress.size();j++){
+        		        		String[] update;
+        		        		String tem;
+        		        		tem=IPaddress.get(j).toString();
+        		        		
+        		        		update=tem.split("g");
+        		        		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+        		        		//ipアドレスごとにキーワードごと不正通信回数を更新
+        		        		System.out.println(update[0]+update[1]);
+        		        		System.out.println(update[1]);
+        		        		
+        		        		
+        		        		boolean flagw=true;
+        		        		int cnt=0;
+        		        		while(flagw){
+        		        			if(cnt==0){
+        		        				System.out.println("---------------------"+Select.selectMac(name,update[0]));
+        		        				InsertUpdateDelete.insertMac(Select.selectMac(name,update[0]), name);
+        		        				cnt++;
+        		        			}else{
+        		        				Number=InsertUpdateDelete.macCountUpdate(Integer.parseInt(update[1]), name,Select.selectMac(name,update[0]));
+        		        				flagw=false;
+        		        			}
+        		        		}
+        		        		
+        		        		
+        		        		//temCnt=temCnt+Integer.parseInt(update[1]);
+        		        		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+        		        		InsertUpdateDelete.TEMBlackUpdate(Integer.parseInt(update[1]), name, blackKeywords.get(i).toString());
+        		        			
+        		        		}
+        		        	
+        		        	//}
+        		            
+        		        }
+        			
+        		}else{
+        		for (int i=0;i<blackKeywords.size();i++) {
+            	ArrayList<String> IPaddress=Select.CountUnauthorized(name,blackKeywords.get(i).toString());
+            	InsertUpdateDelete.squidlogUpdate(name, blackKeywords.get(i));
+            	for(int j=0;j<IPaddress.size();j++){
+            		String[] update;
+            		String tem;
+            		tem=IPaddress.get(j).toString();
+            		
+            		update=tem.split("g");
+            		//InsertUpdateDelete.execCommandReturn(IPaddress.toString()+blackKeywords.get(i).toString()+update[0]+update[1]+tem,"C:\\test\\test2.txt");
+            		//ipアドレスごとにキーワードごと不正通信回数を更新
+            		System.out.println(update[0]+update[1]);
+            		System.out.println(update[1]);
+            		Number=InsertUpdateDelete.ipCountUpdate(Integer.parseInt(update[1]), name,update[0]);
+            		//temCnt=temCnt+Integer.parseInt(update[1]);
+            		InsertUpdateDelete.hitBlackUpdate(Integer.parseInt(update[1]),name,blackKeywords.get(i).toString());
+            		InsertUpdateDelete.TEMBlackUpdate(Integer.parseInt(update[1]), name, blackKeywords.get(i).toString());
+            		
+            			
+            		}
+            	
+            	//}
+                
+            }
+        		}
+            Number=4;
+            System.out.println("Number=3の処理成功");
+        	}else if(Number==4){
+        		boolean flag=true;
+        		int cnt=0;
+        		if(Select.booleanAdmin(name)==1){
+        			while(flag){
+        				if(cnt==0){
+        					String message="";
+        					message=Select.ByblackListSabun(name)+"?"+Integer.toString(Select.MaxSelect(name));
+        	    		sendout.println(message);
+        	    		cnt=1;
+        	        	
+        	    		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        	    		System.out.println(message);
+        	        	}else if(cnt==1){
+        	        		ArrayList<String> Maccount= Select.connectionSelectSabunMac(name);
+        	        		if(Maccount.size()!=0){
+        	        		for(int i=0;i<Maccount.size();i++){
+        	        			String[] update;
+        	        			String tem;
+        	        			tem=Maccount.get(i);
+        	            		update=tem.split("g");
+        	            		System.out.println(update[0]+"\\\\\\\\\\\\\\\\"+update[1]);
+        	        			InsertUpdateDelete.updateLastMacucc(name,update[0],Integer.parseInt(update[1]));
+        	        			
+        	        		}
+        	        		}
+        	        		InsertUpdateDelete.TEMBlackUpdatelast(name);
+        	        		InsertUpdateDelete.updateMaxCnt(name);
+        	        		System.out.println("最後の処理が終了しました");
+        	    		flag=false;
+        	    			}
+        	    	}
+        	    		flg=false;
+        	    	}else{
+        		while(flag){
+    			if(cnt==0){
+    				String message="";
+    				message=Select.ByblackListSabun(name)+"?"+Integer.toString(Select.MaxSelect(name));
+        		sendout.println(message);
+        		cnt=1;
+            	
+        		System.out.println("Number=4の処理成功　クライアントに正常に文字列が送られました");
+        		System.out.println(message);
+            	}else if(cnt==1){
+            		ArrayList<String> IPcount= Select.connectionSelectSabun(name);
+            		if(IPcount.size()!=0){
+            		for(int i=0;i<IPcount.size();i++){
+            			String[] update;
+            			String tem;
+            			tem=IPcount.get(i);
+                		update=tem.split("g");
+            			InsertUpdateDelete.updateLastIPucc(name,update[0],Integer.parseInt(update[1]));
+            			
+            		}
+            		}
+            		InsertUpdateDelete.TEMBlackUpdatelast(name);
+            		InsertUpdateDelete.updateMaxCnt(name);
+            		System.out.println("最後の処理が終了しました");
+        		flag=false;
+        			}
+        	}
+        		flg=false;
+        	}
+        	
+        		
+        	}
+        	
+        	}
+      
+        	System.out.println("while処理を抜けました");
+        	
+    	}else if(Reader[0].equals("Exe")){
+    	sendout.println( soc.getInetAddress());
+    	}else if((Reader[0].equals("Graph"))&&(Reader[1].equals("leaseUpButton"))){
+    		//リースファイル更新ボタンが押されたら
+    		//リースファイルをインサートしてアップデートする。
+    		name=Reader[2];
+    		int cnt=0;
+    		if(Reader.length>3){
+    		for(int i=3;i<Reader.length-1;i+=3){
+    			InsertUpdateDelete.insertlease(Reader[i+1],Reader[i+2],Reader[i],name);
+    			cnt++;
+    			boolean flag=true;
+        		int count=0;
+        		while(flag){
+        			if(count==0){
+        				InsertUpdateDelete.updateLeaseMax(name,cnt);
+        				count++;
+        			}else{
+        		sendout.println(Select.leaceMaxCnt(name));
+        		flag=false;
+        			}
+        		}
+        		
+    		}
+    		}else{
+    		
+    			
+    		sendout.println(Select.leaceMaxCnt(name));
+    			
+    		}
+    	
+    	}else{sendout.println("unnko");
+    	sendout.println("reizi");
+    }
+	  
+  }
+    
+  catch(Exception ioex){
+    ioex.printStackTrace();
+  }
+  finally{
+    if(soc != null){
+        try {
+			soc.close();
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
+      }
+  }
+}
+}
+
+
+
+
+
